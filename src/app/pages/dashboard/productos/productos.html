@@ -1,0 +1,248 @@
+<div class="header-actions">
+  <div>
+    <h3>Gestión de Productos & Auditoría de Capital</h3>
+    <p class="subtitle">Catálogo textil, reglas de ofertas automáticas y análisis de recuperación de capital para liquidación de prendas.</p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <button class="btn-primary" (click)="openModal()">+ Nuevo Producto</button>
+  </div>
+</div>
+
+<!-- Selector de Modo de Vista (Catálogo vs Auditoría de Empleado) -->
+<div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+  <button 
+    (click)="vistaModo = 'capital_ofertas'" 
+    [style.background]="vistaModo === 'capital_ofertas' ? '#312e81' : '#f8fafc'"
+    [style.color]="vistaModo === 'capital_ofertas' ? '#ffffff' : '#475569'"
+    style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+    <span>Auditoría de Capital & Ofertas (Solo Empleados)</span>
+    <span class="badge" style="background: #e0e7ff; color: #4338ca;">Privado</span>
+  </button>
+  <button 
+    (click)="vistaModo = 'catalogo'" 
+    [style.background]="vistaModo === 'catalogo' ? '#4f46e5' : '#f8fafc'"
+    [style.color]="vistaModo === 'catalogo' ? '#ffffff' : '#475569'"
+    style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 0.9rem; cursor: pointer;">
+    Catálogo Tradicional
+  </button>
+</div>
+
+<!-- TARJETAS DE RESUMEN DE CAPITAL PARA EL EMPLEADO -->
+<div *ngIf="vistaModo === 'capital_ofertas'" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 22px;">
+  <div class="glass-card" style="padding: 18px; border-left: 4px solid #6366f1;">
+    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">INVERSIÓN TOTAL (COSTO REAL)</span>
+    <div style="font-size: 1.6rem; font-weight: 800; color: #1e293b; margin-top: 4px;">Bs. {{ totalCostoInvertido }}</div>
+    <small style="color: #64748b;">Costo adquisición prendas</small>
+  </div>
+  <div class="glass-card" style="padding: 18px; border-left: 4px solid #10b981;">
+    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">CAPITAL A RECUPERAR (OFERTAS)</span>
+    <div style="font-size: 1.6rem; font-weight: 800; color: #059669; margin-top: 4px;">Bs. {{ totalCapitalRecuperado }}</div>
+    <small style="color: #10b981;">Ventas con descuento aplicadas</small>
+  </div>
+  <div class="glass-card" style="padding: 18px;" [style.border-left]="margenNetoTotal >= 0 ? '4px solid #10b981' : '4px solid #ef4444'">
+    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">MARGEN COMERCIAL PROYECTADO</span>
+    <div style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;" [style.color]="margenNetoTotal >= 0 ? '#059669' : '#dc2626'">
+      {{ margenNetoTotal >= 0 ? '+' : '' }}Bs. {{ margenNetoTotal }}
+    </div>
+    <small [style.color]="margenNetoTotal >= 0 ? '#059669' : '#dc2626'">
+      {{ margenNetoTotal >= 0 ? 'Retorno neto positivo' : 'Liquidación con pérdida de capital' }}
+    </small>
+  </div>
+</div>
+
+<!-- TABLA AUDITORÍA DE CAPITAL Y OFERTAS (SOLO EMPLEADOS) -->
+<div class="table-container" *ngIf="vistaModo === 'capital_ofertas'">
+  <table>
+    <thead>
+      <tr>
+        <th>Prenda Textil</th>
+        <th>Costo Adquisición</th>
+        <th>Precio Normal</th>
+        <th>Antigüedad</th>
+        <th>Descuento</th>
+        <th>Precio Oferta</th>
+        <th>Margen Bruto</th>
+        <th>% Retorno Capital</th>
+        <th>Auditoría Financiera</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of productosOfertas">
+        <td>
+          <strong>{{ p.nombre }}</strong>
+          <div style="font-size: 0.75rem; color: #64748b;">{{ p.categoria?.nombre || 'General' }}</div>
+        </td>
+        <td style="color: #64748b; font-weight: 600;">Bs. {{ p.costo_real }}</td>
+        <td style="text-decoration: line-through; color: #94a3b8;">Bs. {{ p.precio }}</td>
+        <td>
+          <span class="badge" [style.background]="p.antiguedad_temporadas === 0 ? '#f1f5f9' : (p.antiguedad_temporadas === 1 ? '#e0f2fe' : '#f3e8ff')" [style.color]="p.antiguedad_temporadas === 0 ? '#475569' : (p.antiguedad_temporadas === 1 ? '#0369a1' : '#7e22ce')">
+            {{ p.antiguedad_temporadas === 0 ? 'Actual' : (p.antiguedad_temporadas === 1 ? '1 Temp. Pasada' : '2 Temp. Pasadas') }}
+          </span>
+        </td>
+        <td>
+          <span class="badge" style="background: #fef2f2; color: #b91c1c; font-weight: bold;">
+            -{{ p.descuento_aplicado_pct }}%
+          </span>
+        </td>
+        <td style="font-weight: 800; color: #059669; font-size: 1.05rem;">
+          Bs. {{ p.precio_oferta }}
+        </td>
+        <td>
+          <strong [style.color]="p.margen_recuperacion_monto >= 0 ? '#059669' : '#dc2626'">
+            {{ p.margen_recuperacion_monto >= 0 ? '+' : '' }}Bs. {{ p.margen_recuperacion_monto }}
+          </strong>
+        </td>
+        <td>
+          <span style="font-weight: 700; color: #1e293b;">{{ p.recuperacion_capital_pct }}%</span>
+        </td>
+        <td>
+          <span class="badge" 
+                [style.background]="p.estado_capital === 'GANANCIA' ? '#dcfce7' : (p.estado_capital === 'RECUPERACION_EXACTA' ? '#e0f2fe' : '#fee2e2')" 
+                [style.color]="p.estado_capital === 'GANANCIA' ? '#15803d' : (p.estado_capital === 'RECUPERACION_EXACTA' ? '#0369a1' : '#b91c1c')"
+                style="font-size: 0.78rem; font-weight: bold;">
+            {{ p.estado_capital === 'GANANCIA' ? 'Ganancia Neta' : (p.estado_capital === 'RECUPERACION_EXACTA' ? 'Recuperación Par' : 'Pérdida Asumida') }}
+          </span>
+        </td>
+      </tr>
+      <tr *ngIf="productosOfertas.length === 0">
+        <td colspan="9" class="empty-state">No hay registros de ofertas disponibles.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TABLA TRADICIONAL DEL CATÁLOGO -->
+<div class="table-container" *ngIf="vistaModo === 'catalogo'">
+  <div *ngIf="isLoading" class="loading-state">Cargando...</div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Modelo 3D (AR)</th>
+        <th width="120">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>#{{ p.id }}</td>
+        <td class="font-bold">{{ p.nombre }}</td>
+        <td><span class="badge badge-categoria">{{ getCategoriaNombre(p.categoria_id) }}</span></td>
+        <td class="font-bold text-orange">Bs. {{ p.precio }}</td>
+        <td>
+          <span *ngIf="p.modelo_3d_url" class="badge badge-ar">AR Activo</span>
+          <span *ngIf="!p.modelo_3d_url" class="badge badge-inactive">No tiene</span>
+        </td>
+        <td class="action-buttons">
+          <button class="btn-edit" (click)="editProducto(p)">Editar</button>
+          <button class="btn-delete" (click)="deleteProducto(p.id)">Eliminar</button>
+        </td>
+      </tr>
+      <tr *ngIf="productos.length === 0">
+        <td colspan="6" class="empty-state">No hay productos registrados en el catálogo.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- Modal para Nuevo Producto -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar Producto' : 'Crear Producto' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="grid-2-col" style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <div class="input-group" style="flex: 1; margin: 0;">
+          <label>Categoría</label>
+          <select class="input-field" [(ngModel)]="nuevoProducto.categoria_id">
+            <option [ngValue]="null" disabled selected>Categoría...</option>
+            <option *ngFor="let cat of categorias" [ngValue]="cat.id">{{ cat.nombre }}</option>
+          </select>
+        </div>
+        <div class="input-group" style="flex: 1; margin: 0;">
+          <label>Proveedor</label>
+          <select class="input-field" [(ngModel)]="nuevoProducto.proveedor_id">
+            <option [ngValue]="null">Sin Proveedor</option>
+            <option *ngFor="let prov of proveedores" [ngValue]="prov.id">{{ prov.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Colección</label>
+        <select class="input-field" [(ngModel)]="nuevoProducto.coleccion_id">
+          <option [ngValue]="null">Sin Colección</option>
+          <option *ngFor="let col of colecciones" [ngValue]="col.id">{{ col.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Nombre del Producto</label>
+        <input type="text" class="input-field" placeholder="Ej. Chaqueta de Cuero" [(ngModel)]="nuevoProducto.nombre">
+      </div>
+      
+      <div class="input-group">
+        <label>Descripción</label>
+        <textarea class="input-field" rows="2" placeholder="Detalles de la prenda..." [(ngModel)]="nuevoProducto.descripcion"></textarea>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="input-group">
+          <label>Precio Regular Venta (Bs.)</label>
+          <input type="number" class="input-field" placeholder="0.00" [(ngModel)]="nuevoProducto.precio" min="0">
+        </div>
+        <div class="input-group">
+          <label>Costo Adquisición / Producción (Bs.)</label>
+          <input type="number" class="input-field" placeholder="0.00" [(ngModel)]="nuevoProducto.costo_adquisicion" min="0">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="input-group">
+          <label>Antigüedad de Temporada</label>
+          <select class="input-field" [(ngModel)]="nuevoProducto.antiguedad_temporadas">
+            <option [ngValue]="0">Temporada Actual (0% desc.)</option>
+            <option [ngValue]="1">1 Temporada Pasada (30% desc. liquidación)</option>
+            <option [ngValue]="2">2 Temporadas Pasadas (60% outlet agresivo)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Descuento Directo Promocional (%)</label>
+          <input type="number" class="input-field" placeholder="0" [(ngModel)]="nuevoProducto.descuento_porcentaje" min="0" max="90">
+        </div>
+      </div>
+
+      
+      <div class="input-group" style="margin-top: 10px;">
+        <label style="color: var(--primary);">Archivos del Producto</label>
+        
+        <div style="margin-top: 10px;">
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Subir Foto (2D)</label>
+          <input type="file" accept="image/*" class="input-field" (change)="onFileSelected($event, 'imagen')">
+          <small *ngIf="nuevoProducto.imagen_url" style="display: block; margin-top: 5px;" class="text-muted">Ya tiene una imagen: <a [href]="nuevoProducto.imagen_url" target="_blank">Ver actual</a> | <a href="javascript:void(0)" (click)="removeFile('imagen')" style="color: var(--danger); text-decoration: underline;">Eliminar</a></small>
+        </div>
+
+        <div style="margin-top: 15px;">
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Subir Modelo (3D .glb / .gltf)</label>
+          <input type="file" accept=".glb,.gltf" class="input-field" (change)="onFileSelected($event, 'modelo')">
+          <small *ngIf="nuevoProducto.modelo_3d_url" style="display: block; margin-top: 5px;" class="text-muted">Ya tiene un modelo 3D: <a [href]="nuevoProducto.modelo_3d_url" target="_blank">Ver actual</a> | <a href="javascript:void(0)" (click)="removeFile('modelo')" style="color: var(--danger); text-decoration: underline;">Eliminar</a></small>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button type="submit" class="btn-primary" (click)="guardarProducto()" [disabled]="isSaving || isUploading">
+        {{ isUploading ? 'Subiendo archivos...' : (isSaving ? 'Guardando...' : 'Guardar') }}
+      </button>
+    </div>
+  </div>
+</div>
+

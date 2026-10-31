@@ -1,0 +1,73 @@
+<div class="header-actions">
+  <div>
+    <h3>Gestión de Categorías</h3>
+    <p class="subtitle">Administra las clasificaciones de la ropa.</p>
+  </div>
+  <button class="btn-primary" (click)="openModal()">+ Nueva Categoría</button>
+</div>
+
+<div class="table-container">
+  <div *ngIf="isLoading" class="loading-state">Cargando...</div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre de la Categoría</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cat of categorias">
+        <td>#{{ cat.id }}</td>
+        <td class="font-bold">{{ cat.nombre }}</td>
+        <td class="text-muted">{{ cat.descripcion || 'Sin descripción' }}</td>
+        <td>
+          <span class="badge" [ngClass]="cat.activo ? 'badge-active' : 'badge-inactive'">
+            {{ cat.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="action-buttons">
+          <button class="btn-edit" (click)="editCategoria(cat)">Editar</button>
+          <button class="btn-delete" (click)="deleteCategoria(cat.id)">Eliminar</button>
+        </td>
+      </tr>
+      <tr *ngIf="categorias.length === 0">
+        <td colspan="3" class="empty-state">No hay categorías registradas en la Base de Datos.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para Nueva Categoría -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar Categoría' : 'Crear Categoría' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label>Nombre</label>
+        <input type="text" class="input-field" placeholder="Ej. Poleras, Jeans, Zapatos" [(ngModel)]="nuevaCategoria.nombre">
+      </div>
+      <div class="input-group">
+        <label>Descripción</label>
+        <textarea class="input-field" placeholder="Ej. Todo tipo de calzado casual y formal" [(ngModel)]="nuevaCategoria.descripcion" rows="3"></textarea>
+      </div>
+      <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+        <input type="checkbox" id="catEstado" [(ngModel)]="nuevaCategoria.activo" style="width: 18px; height: 18px;">
+        <label for="catEstado" style="margin-bottom: 0;">Categoría Activa (Visible en tienda)</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardarCategoria()" [disabled]="isSaving || !nuevaCategoria.nombre">
+        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+

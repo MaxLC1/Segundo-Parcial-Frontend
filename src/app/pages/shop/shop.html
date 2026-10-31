@@ -1,0 +1,382 @@
+<!-- Navbar de la Tienda -->
+<nav class="shop-navbar glass-card">
+  <div class="logo-container">
+    <div class="logo-icon small"></div>
+    <span class="brand-text">FashionStore AR</span>
+  </div>
+  
+  <div class="nav-links">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
+    <a routerLink="/colecciones">Colecciones</a>
+    <a routerLink="/vestidor-virtual" class="ai-badge" routerLinkActive="active">Vestidor Virtual</a>
+    <a routerLink="/login" class="login-link">Acceso Empleados</a>
+  </div>
+
+  <div class="nav-actions" style="display: flex; align-items: center; gap: 10px;">
+    <!-- Botón de Nota de Devolución Activa del Cliente -->
+    <button *ngIf="misNotasActivas.length > 0" 
+            class="active-return-btn" 
+            style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 20px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; animation: pulse 2s infinite;"
+            (click)="abrirMiNotaActiva(misNotasActivas[0])">
+      <span>Mi Nota Activa (Delivery)</span>
+      <span style="background: #f59e0b; color: white; border-radius: 50%; padding: 1px 7px; font-size: 0.75rem;">{{ misNotasActivas.length }}</span>
+    </button>
+
+    <button class="cart-btn" (click)="toggleCart()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span class="cart-badge">{{ cartItems.length }}</span>
+    </button>
+  </div>
+</nav>
+
+
+<!-- Contenedor Principal donde se inyectan las páginas (Home, Producto, etc) -->
+<main class="shop-content">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer -->
+<footer class="shop-footer">
+  <p>&copy; 2026 FashionStore AR. Todos los derechos reservados.</p>
+</footer>
+
+<!-- Carrito Sidebar (Overlay) -->
+<div class="cart-overlay" *ngIf="isCartOpen" (click)="toggleCart()"></div>
+<div class="cart-sidebar" [class.open]="isCartOpen">
+  <div class="cart-header">
+    <h3>Tu Carrito</h3>
+    <button class="close-btn" (click)="toggleCart()">×</button>
+  </div>
+  
+  <div class="cart-body">
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <p>Tu carrito está vacío.</p>
+      <button class="btn-primary" (click)="toggleCart()">Explorar Catálogo</button>
+    </div>
+    
+    <!-- Items del Carrito -->
+    <div class="cart-items-list" *ngIf="cartItems.length > 0">
+      <div class="cart-item" *ngFor="let item of cartItems; let i = index">
+        <img [src]="item.producto.imagen_url || 'https://via.placeholder.com/60?text=Foto'" class="cart-item-img" alt="Product Image">
+        <div class="item-info">
+          <h4>{{ item.producto.nombre }}</h4>
+          <p class="item-price">Bs. {{ item.producto.precio }} <span class="qty">x{{ item.cantidad }}</span></p>
+        </div>
+        <div class="item-actions">
+          <span class="item-subtotal">Bs. {{ item.subtotal }}</span>
+          <button class="remove-btn" (click)="removeFromCart(i)" title="Eliminar del carrito">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="cart-footer" *ngIf="cartItems.length > 0">
+    <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 6px; display: flex; justify-content: space-between;">
+      <span>Subtotal prendas:</span>
+      <span>Bs. {{ cartService.getSubtotalSinMayoreo() }}</span>
+    </div>
+    <div *ngIf="cartService.getDescuentoMayoreo() > 0" style="font-size: 0.85rem; color: #059669; font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; background: #ecfdf5; padding: 4px 8px; border-radius: 4px;">
+      <span>Descuento Mayoreo (3+ prendas, -15%):</span>
+      <span>-Bs. {{ cartService.getDescuentoMayoreo() }}</span>
+    </div>
+    <div class="total-row">
+      <span>Total a Pagar:</span>
+      <span class="font-bold text-primary" style="font-size: 1.3rem;">Bs. {{ cartService.getTotal() }}</span>
+    </div>
+    <button class="btn-primary full-width" (click)="openCheckout()">Proceder al Pago / Reserva</button>
+  </div>
+
+</div>
+
+<!-- Modal de Checkout -->
+<div class="checkout-overlay" *ngIf="isCheckoutOpen">
+  <div class="checkout-modal glass-card">
+    <div class="modal-header">
+      <h2>Completar Pedido</h2>
+      <button class="close-btn" (click)="closeCheckout()">×</button>
+    </div>
+    
+    <div class="modal-body" *ngIf="!isSuccess">
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" class="input-field" placeholder="tu@correo.com" [(ngModel)]="correoCliente">
+      </div>
+
+      <div class="form-group">
+        <label>¿Cómo quieres recibir tu pedido?</label>
+        <select class="input-field" [(ngModel)]="tipoEntrega" (change)="onTipoEntregaChange()">
+          <option value="Recojo en Tienda">Recoger en Sucursal (Reserva)</option>
+          <option value="Delivery">Envío a Domicilio (Delivery)</option>
+        </select>
+      </div>
+      
+      <div class="form-group" *ngIf="tipoEntrega === 'Recojo en Tienda'">
+        <label>Sucursal de Recojo</label>
+        <select class="input-field" [(ngModel)]="sucursalSeleccionada">
+          <option [value]="null" disabled selected>Selecciona una sucursal...</option>
+          <option *ngFor="let suc of sucursales" [value]="suc.id">{{ suc.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="tipoEntrega === 'Delivery'">
+        <label>Dirección de Envío</label>
+        <input type="text" class="input-field" placeholder="Ej: Calle 123, Zona Sur" [(ngModel)]="direccionEnvio">
+      </div>
+      
+      <div class="form-group">
+        <label>Método de Pago</label>
+        <select class="input-field" [(ngModel)]="metodoPagoGlobal" (change)="onMetodoPagoChange()">
+          <option value="Caja" *ngIf="tipoEntrega === 'Recojo en Tienda'">Pagar en Caja de la Sucursal</option>
+          <option value="Efectivo" *ngIf="tipoEntrega === 'Delivery'">Efectivo al recibir</option>
+          <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
+          <option value="QR">Transferencia QR</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="metodoPagoGlobal === 'Tarjeta'" style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; margin: 0;">Número de Tarjeta</label>
+          <div style="display: flex; gap: 4px;">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" style="color: #6366f1;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          </div>
+        </div>
+        <input type="text" class="input-field" placeholder="0000 0000 0000 0000" style="margin-bottom: 12px; letter-spacing: 2px; font-family: monospace; font-size: 1.1rem;"
+               autocomplete="off" maxlength="19" [value]="numeroTarjeta" (input)="onTarjetaNativeInput($event)">
+        <div style="display: flex; gap: 12px;">
+          <input type="text" class="input-field" placeholder="MM/AA" style="flex: 1;" autocomplete="off" maxlength="5" [value]="fechaExpiracion" (input)="onFechaNativeInput($event)">
+          <input type="text" class="input-field" placeholder="CVC" style="flex: 1;" autocomplete="off" maxlength="4">
+        </div>
+        
+        <!-- Badge de Stripe -->
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 15px;">
+          <div class="secure-badge" style="margin-top: 0; margin-bottom: 5px;">
+            <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Procesado de forma segura
+          </div>
+          <div style="font-size: 0.7rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+            POWERED BY <strong style="color: #6366f1; font-size: 0.9rem; letter-spacing: 1px;">stripe</strong>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group text-center" *ngIf="metodoPagoGlobal === 'QR'" style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center;">
+        <p class="text-muted" style="margin-bottom: 15px; font-size: 0.95rem;">Escanea el código con tu App Bancaria para pagar <strong class="text-primary">Bs. {{ cartService.getTotal() }}</strong></p>
+        <div class="qr-container qr-pulse" style="position: relative; width: 180px; height: 180px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+          <!-- Scanner Line -->
+          <div class="qr-scanner" style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #f97316; box-shadow: 0 0 15px 3px #f97316; animation: scan 2s ease-in-out infinite; z-index: 10;"></div>
+          
+          <!-- Mock QR Code SVG -->
+          <svg viewBox="0 0 100 100" width="100%" height="100%">
+            <!-- Marco exterior -->
+            <rect x="10" y="10" width="25" height="25" fill="none" stroke="#1e293b" stroke-width="6"/>
+            <rect x="16" y="16" width="13" height="13" fill="#1e293b"/>
+            
+            <rect x="65" y="10" width="25" height="25" fill="none" stroke="#1e293b" stroke-width="6"/>
+            <rect x="71" y="16" width="13" height="13" fill="#1e293b"/>
+            
+            <rect x="10" y="65" width="25" height="25" fill="none" stroke="#1e293b" stroke-width="6"/>
+            <rect x="16" y="71" width="13" height="13" fill="#1e293b"/>
+            
+            <!-- Patrones internos simulados -->
+            <rect x="45" y="10" width="10" height="10" fill="#1e293b"/>
+            <rect x="45" y="25" width="10" height="10" fill="#1e293b"/>
+            <rect x="10" y="45" width="10" height="10" fill="#1e293b"/>
+            <rect x="25" y="45" width="25" height="10" fill="#1e293b"/>
+            <rect x="60" y="45" width="10" height="10" fill="#1e293b"/>
+            <rect x="80" y="45" width="10" height="10" fill="#1e293b"/>
+            <rect x="45" y="65" width="10" height="25" fill="#1e293b"/>
+            <rect x="65" y="65" width="25" height="10" fill="#1e293b"/>
+            <rect x="80" y="80" width="10" height="10" fill="#1e293b"/>
+            <rect x="65" y="80" width="10" height="10" fill="#1e293b"/>
+          </svg>
+        </div>
+        <div class="secure-badge" style="margin-top: 15px;">
+          <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Aprobación automática instantánea
+        </div>
+      </div>
+      
+      <div class="order-summary">
+        <h4>Resumen de tu pedido</h4>
+        <div class="summary-row" *ngFor="let item of cartItems">
+          <span>{{ item.cantidad }}x {{ item.producto.nombre }}</span>
+          <span>Bs. {{ item.subtotal }}</span>
+        </div>
+        <div class="summary-row" *ngIf="cartService.getDescuentoMayoreo() > 0" style="color: #059669; font-weight: 700; margin-top: 6px;">
+          <span>Descuento Mayoreo (-15%)</span>
+          <span>-Bs. {{ cartService.getDescuentoMayoreo() }}</span>
+        </div>
+        <hr>
+        <div class="summary-row total">
+          <span>Total a Pagar</span>
+          <span style="font-size: 1.25rem; color: #4f46e5;">Bs. {{ cartService.getTotal() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE ÉXITO -->
+    <div class="modal-body success-state" *ngIf="isSuccess" style="text-align: center; padding: 40px 20px;">
+      <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+      </svg>
+      <h3 style="color: #10b981; margin-top: 20px; font-size: 1.8rem;">¡Pago Exitoso!</h3>
+      <p class="text-muted" style="margin-top: 10px; font-size: 1.1rem;">{{ successMessage }}</p>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-secondary" *ngIf="!isSuccess" (click)="closeCheckout()">Cancelar</button>
+      <button class="btn-primary" *ngIf="!isSuccess" (click)="confirmarPedido()" [disabled]="isProcessing || !correoCliente || (tipoEntrega === 'Recojo en Tienda' && !sucursalSeleccionada) || (tipoEntrega === 'Delivery' && !direccionEnvio)">
+        {{ isProcessing ? 'Procesando...' : (metodoPagoGlobal === 'Tarjeta' || metodoPagoGlobal === 'QR' ? 'Proceder con Pasarela OTP' : 'Confirmar Pedido') }}
+      </button>
+      <button class="btn-primary" *ngIf="isSuccess" (click)="closeCheckout()" style="width: 100%;">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PASARELA DE PAGOS DIGITAL CON VALIDACIÓN OTP (Requerimiento 2do Parcial) -->
+<div class="checkout-overlay" *ngIf="showModalOTP" (click)="showModalOTP = false">
+  <div class="checkout-modal glass-card" style="max-width: 480px;" (click)="$event.stopPropagation()">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1e1b4b, #312e81); color: white; border-radius: 12px 12px 0 0; margin: -25px -25px 20px -25px; padding: 20px 25px;">
+      <div>
+        <span style="font-size: 0.75rem; letter-spacing: 1px; color: #a5b4fc; font-weight: bold;">PASARELA BANCARIA SEGURA</span>
+        <h3 style="margin: 4px 0 0; color: white; font-size: 1.25rem;">Verificación OTP de Seguridad</h3>
+      </div>
+      <button class="close-btn" style="color: white;" (click)="showModalOTP = false">×</button>
+    </div>
+
+    <div class="modal-body" style="padding: 10px 0;">
+      <!-- Alerta simulada de SMS/Notificación Push -->
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 18px; font-size: 0.88rem; color: #1e40af;">
+        <div style="font-weight: bold; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <span>Notificación de Seguridad Bancaria (SMS / Push):</span>
+        </div>
+        <p style="margin: 0; line-height: 1.4;">
+          {{ otpMensaje }}
+        </p>
+        <div style="margin-top: 8px; background: #ffffff; border: 1px dashed #3b82f6; border-radius: 6px; padding: 8px; text-align: center;">
+          <span style="color: #64748b; font-size: 0.8rem;">Código OTP de prueba generado:</span>
+          <div style="font-family: monospace; font-size: 1.6rem; font-weight: 900; letter-spacing: 6px; color: #1d4ed8; margin-top: 2px;">
+            {{ otpCodigoSimulado }}
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px;">
+          Ingresa el Código OTP de 6 Dígitos
+        </label>
+        <input 
+          type="text" 
+          maxlength="6"
+          class="input-field" 
+          placeholder="000000" 
+          [(ngModel)]="otpInput" 
+          style="text-align: center; font-size: 1.8rem; letter-spacing: 8px; font-family: monospace; font-weight: bold;">
+      </div>
+
+      <div *ngIf="otpError" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 14px;">
+        {{ otpError }}
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; margin-top: 10px;">
+        <span>Transacción: <strong>{{ otpTransaccionId }}</strong></span>
+        <span>Monto: <strong>Bs. {{ cartService.getTotal() }}</strong></span>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="margin-top: 15px;">
+      <button class="btn-secondary" (click)="showModalOTP = false">Cancelar</button>
+      <button class="btn-primary" style="width: auto; background: #2563eb;" (click)="validarCodigoOTP()" [disabled]="otpVerificando || otpInput.length !== 6">
+        {{ otpVerificando ? 'Validando...' : 'Autorizar Pago con OTP' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOTA DE DEVOLUCIÓN ACTIVA DEL CLIENTE PARA PRESENTAR AL DELIVERY -->
+<div class="checkout-overlay" *ngIf="showModalNotaCliente && notaClienteSeleccionada" (click)="showModalNotaCliente = false">
+  <div class="checkout-modal glass-card" style="max-width: 500px; padding: 0; overflow: hidden; border: 2px solid #f59e0b;" (click)="$event.stopPropagation()">
+    
+    <!-- Encabezado Cliente -->
+    <div style="background: linear-gradient(135deg, #78350f, #b45309); color: white; padding: 20px; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="font-size: 0.75rem; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 4px;">COMPROBANTE CLIENTE</span>
+        <button (click)="showModalNotaCliente = false" style="background: transparent; border: none; color: white; font-size: 1.3rem; cursor: pointer;">×</button>
+      </div>
+      <h3 style="margin: 0; font-size: 1.25rem;">MI NOTA DE DEVOLUCIÓN ACTIVA</h3>
+      <div style="font-family: monospace; font-size: 1.5rem; font-weight: bold; color: #fde68a; margin-top: 6px;">
+        {{ notaClienteSeleccionada.codigo_nota }}
+      </div>
+      <small style="color: #fef3c7; display: block; margin-top: 4px;">
+        Muestra este comprobante en tu pantalla al repartidor de delivery cuando llegue a tu domicilio.
+      </small>
+    </div>
+
+    <div style="padding: 22px; background: white;">
+      <!-- Indicación de pago/diferencia -->
+      <div [style.background]="notaClienteSeleccionada.diferencia_precio > 0 ? '#fef2f2' : '#f0fdf4'" 
+           style="border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: center; border: 1px solid #e2e8f0;">
+        <div *ngIf="notaClienteSeleccionada.diferencia_precio > 0" style="color: #b91c1c; font-weight: bold; font-size: 1.1rem;">
+          Total a abonar al delivery: Bs. {{ notaClienteSeleccionada.diferencia_precio.toFixed(2) }}
+        </div>
+        <div *ngIf="notaClienteSeleccionada.diferencia_precio <= 0" style="color: #15803d; font-weight: bold; font-size: 1.05rem;">
+          No debes abonar dinero al delivery (Cambio o cupón)
+        </div>
+        <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+          {{ notaClienteSeleccionada.mensaje_notificacion }}
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px;">
+        <div><strong>Prenda a entregar al delivery:</strong> {{ notaClienteSeleccionada.prenda_devuelta_info }}</div>
+        <div *ngIf="notaClienteSeleccionada.prenda_nueva_info"><strong>Prenda que te entregarán:</strong> {{ notaClienteSeleccionada.prenda_nueva_info }}</div>
+        <div><strong>Motivo:</strong> {{ notaClienteSeleccionada.motivo }}</div>
+        <div><strong>Venta Origen:</strong> #{{ notaClienteSeleccionada.venta_id }}</div>
+      </div>
+
+      <!-- Simulación Código de Barras -->
+      <div style="text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; background: #fafafa;">
+        <div style="font-family: monospace; letter-spacing: 4px; font-size: 1rem; font-weight: bold;">
+          ||||| ||| |||| | ||||| || ||||
+        </div>
+        <span style="font-family: monospace; font-size: 0.75rem; color: #64748b;">*{{ notaClienteSeleccionada.codigo_nota }}*</span>
+      </div>
+
+      <div style="margin-top: 14px; text-align: center; font-size: 0.75rem; color: #94a3b8;">
+        ℹ️ Una vez que el delivery confirme la entrega, esta nota desaparecerá automáticamente de tu pantalla.
+      </div>
+    </div>
+
+    <div style="padding: 12px 20px; background: #f1f5f9; text-align: right;">
+      <button class="btn-primary" style="width: auto; background: #b45309;" (click)="showModalNotaCliente = false">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Mobile Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+    <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+    <span>Inicio</span>
+  </a>
+  <a routerLink="/colecciones" routerLinkActive="active" class="nav-item">
+    <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+    <span>Catálogo</span>
+  </a>
+  <a routerLink="/vestidor-virtual" routerLinkActive="active" class="nav-item special-ai">
+    <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg></span>
+    <span>IA</span>
+  </a>
+  <a href="javascript:void(0)" class="nav-item" (click)="toggleCart()">
+    <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span>
+    <span>Carrito</span>
+  </a>
+  <a routerLink="/login" class="nav-item">
+    <span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    <span>Staff</span>
+  </a>
+</nav>
+

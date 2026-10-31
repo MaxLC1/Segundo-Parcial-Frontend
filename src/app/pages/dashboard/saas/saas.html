@@ -1,0 +1,145 @@
+<div class="saas-container">
+  <div class="page-header">
+    <div>
+      <h2 class="title">Administración SaaS y Planes de Suscripción</h2>
+      <p class="subtitle">Gestión centralizada de empresas contratantes (Tenants), planes, límites y aislamiento lógico</p>
+    </div>
+
+    <!-- Selector de Empresa (Demostración de Aislamiento Multitenant) -->
+    <div class="tenant-selector">
+      <label>Empresa Activa (Tenant):</label>
+      <select [ngModel]="empresaIdSeleccionada" (ngModelChange)="seleccionarEmpresa($event)">
+        <option *ngFor="let emp of empresas" [value]="emp.id">
+          {{ emp.nombre }} ({{ emp.codigo }})
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="mensajeExito" class="success-banner">
+    {{ mensajeExito }}
+  </div>
+
+  <!-- Información de la Empresa y Estado de Suscripción -->
+  <div *ngIf="empresaActual && limites" class="saas-grid">
+    <!-- Tarjeta Empresa -->
+    <div class="card glass-card">
+      <div class="card-header">
+        <span class="badge-tenant">Tenant #{{ empresaActual.id }}</span>
+        <h3>{{ empresaActual.nombre }}</h3>
+        <span class="code">{{ empresaActual.codigo }}</span>
+      </div>
+
+      <div class="details-list">
+        <div class="detail-row">
+          <span>NIT / RUT:</span>
+          <strong>{{ empresaActual.nit_rut || 'No especificado' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Email Contacto:</span>
+          <strong>{{ empresaActual.email_contacto || 'No especificado' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Teléfono:</span>
+          <strong>{{ empresaActual.telefono || 'No especificado' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Dirección Fiscal:</span>
+          <strong>{{ empresaActual.direccion_fiscal || 'No especificada' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta Plan y Límites -->
+    <div class="card glass-card highlighted">
+      <div class="card-header">
+        <span class="badge-plan" [class.pro]="limites.plan_nombre === 'Profesional'">
+          Plan {{ limites.plan_nombre }}
+        </span>
+        <h3>Estado de la Suscripción</h3>
+        <span class="status-indicator" [class.active]="limites.suscripcion_activa">
+          {{ limites.suscripcion_activa ? '● Activa y Vigente' : '● Vencida' }}
+        </span>
+      </div>
+
+      <!-- Barra de uso de sucursales -->
+      <div class="usage-section">
+        <div class="usage-label">
+          <span>Sucursales Activas:</span>
+          <strong>{{ limites.sucursales_activas }} de {{ limites.max_sucursales }} permitidas</strong>
+        </div>
+        <div class="progress-bar">
+          <div 
+            class="progress-fill" 
+            [style.width.%]="(limites.sucursales_activas / limites.max_sucursales) * 100"
+            [class.warning]="limites.sucursales_activas >= limites.max_sucursales">
+          </div>
+        </div>
+        <small *ngIf="limites.sucursales_activas >= limites.max_sucursales" class="limit-warn">
+          Ha alcanzado el límite máximo de sucursales para el Plan {{ limites.plan_nombre }}.
+        </small>
+      </div>
+
+      <!-- Checklist de Capacidades Habilitadas -->
+      <div class="features-checklist">
+        <div class="feature-item" [class.enabled]="limites.permite_ia_generativa">
+          <span class="icon">
+            <svg *ngIf="limites.permite_ia_generativa" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg *ngIf="!limites.permite_ia_generativa" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+          <span>Reportes Generativos con IA y Analítica ML</span>
+        </div>
+        <div class="feature-item" [class.enabled]="limites.permite_offline">
+          <span class="icon">
+            <svg *ngIf="limites.permite_offline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg *ngIf="!limites.permite_offline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </span>
+          <span>Operación Offline PWA e IndexedDB</span>
+        </div>
+        <div class="feature-item enabled">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>Gestión de Inventario y Ventas Multi-sucursal</span>
+        </div>
+        <div class="feature-item enabled">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span>Gestión de Cambios de Prendas de Vestir</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativa y Cambio de Planes (Simulación Administrativa) -->
+  <div class="plans-section">
+    <h3 class="section-title">Cambiar o Renovar Plan de Suscripción</h3>
+    <div class="plans-grid">
+      <div *ngFor="let p of planes" class="plan-card glass-card" [class.current]="limites?.plan_nombre === p.nombre">
+        <div class="plan-badge-top" *ngIf="limites?.plan_nombre === p.nombre">Plan Actual</div>
+        <h4>Plan {{ p.nombre }}</h4>
+        <div class="plan-price">
+          <span class="currency">BOB</span>
+          <span class="amount">{{ p.precio_mensual }}</span>
+          <span class="period">/ mes</span>
+        </div>
+        <p class="plan-desc">{{ p.descripcion }}</p>
+
+        <ul class="plan-specs">
+          <li><strong>Hasta {{ p.max_sucursales }} sucursales activas</strong></li>
+          <li>{{ p.permite_ia_generativa ? 'Incluye' : 'No incluye' }} Reportes Generativos con IA</li>
+          <li>Operación Offline y Sincronización</li>
+          <li>Gestión de Cambios de Prendas</li>
+        </ul>
+
+        <button 
+          class="btn-plan-action" 
+          [disabled]="limites?.plan_nombre === p.nombre || isLoading"
+          (click)="cambiarPlan(p.id)">
+          {{ limites?.plan_nombre === p.nombre ? 'Plan Activo' : 'Elegir Plan ' + p.nombre }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

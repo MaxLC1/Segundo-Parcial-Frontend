@@ -1,0 +1,56 @@
+<div class="login-layout">
+  
+  <div class="login-form-side">
+    <div class="form-wrapper">
+      <div class="logo-container">
+        <h2>FashionStore AR</h2>
+        <p>Inicia sesión en tu Panel Administrativo</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        
+        <div class="input-group">
+          <label>Correo Electrónico</label>
+          <input 
+            type="email" 
+            class="input-field" 
+            placeholder="admin@fashionstore.com"
+            [(ngModel)]="email" 
+            name="email" 
+            required>
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input 
+            type="password" 
+            class="input-field" 
+            placeholder="••••••••"
+            [(ngModel)]="password" 
+            name="password" 
+            required>
+        </div>
+
+        <div class="error-msg" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="!loginForm.form.valid || isLoading">
+          <span *ngIf="!isLoading">Iniciar sesión</span>
+          <span *ngIf="isLoading" class="loader"></span>
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Imagen lateral representativa de moda / tienda -->
+  <div class="login-image-side">
+    <div class="image-overlay">
+      <h1>El futuro del E-commerce</h1>
+      <p>Gestiona tu catálogo de ropa y los vestidores virtuales de Realidad Aumentada desde un solo lugar.</p>
+    </div>
+  </div>
+
+</div>
+

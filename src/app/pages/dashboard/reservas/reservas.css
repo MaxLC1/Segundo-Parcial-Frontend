@@ -1,0 +1,65 @@
+.table-container {
+  background: white; border: var(--card-border);
+  border-radius: 8px; overflow: hidden;
+  margin-top: 20px;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+td { color: var(--text-main); font-size: 0.95rem; vertical-align: middle; }
+
+.loading-state, .empty-state { padding: 40px; text-align: center; color: var(--text-muted); }
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background-color: #f1f5f9;
+}
+
+.text-warning { color: #d97706; background-color: #fef3c7; }
+.text-primary { color: #1d4ed8; background-color: #dbeafe; }
+.text-success { color: #15803d; background-color: #dcfce3; }
+.text-error { color: #b91c1c; background-color: #fee2e2; }
+.text-muted { color: #64748b; }
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.btn-danger {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background-color: #fecaca;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #1e293b;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

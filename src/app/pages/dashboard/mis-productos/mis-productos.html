@@ -1,0 +1,47 @@
+<div class="header-actions">
+  <div>
+    <h3>Mis Productos Provistos</h3>
+    <p class="subtitle">Listado de tus prendas activas en el catálogo de FashionStore.</p>
+  </div>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+  <div class="stat-card glass-card" style="padding: 20px; text-align: center; border-radius: 12px; background: white;">
+    <h4 style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Total de Diseños</h4>
+    <p style="font-size: 2rem; font-weight: bold; color: var(--primary); margin: 10px 0 0 0;">{{ productos.length }}</p>
+  </div>
+  <div class="stat-card glass-card" style="padding: 20px; text-align: center; border-radius: 12px; background: white;">
+    <h4 style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Estado del Catálogo</h4>
+    <p style="font-size: 1.2rem; font-weight: bold; color: var(--success); margin: 10px 0 0 0;">Activo</p>
+  </div>
+</div>
+
+<div class="table-container glass-card" *ngIf="!isLoading">
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Col. / Temp.</th>
+        <th>Precio Venta</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>
+          <img *ngIf="p.imagen_url" [src]="p.imagen_url" width="40" height="40" style="border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+          <div *ngIf="!p.imagen_url" style="width: 40px; height: 40px; background: rgba(0,0,0,0.05); border-radius: 8px; border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #999;">Sin Foto</div>
+        </td>
+        <td class="font-bold">{{ p.nombre }}</td>
+        <td>{{ p.coleccion?.nombre || 'General' }} <span *ngIf="p.temporada" class="text-muted" style="font-size: 0.8rem;">({{ p.temporada.nombre }})</span></td>
+        <td class="font-bold text-orange">Bs. {{ p.precio }}</td>
+        <td><span class="badge badge-active">Activo</span></td>
+      </tr>
+      <tr *ngIf="productos.length === 0">
+        <td colspan="5" class="empty-state">No hay productos registrados a su nombre.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+

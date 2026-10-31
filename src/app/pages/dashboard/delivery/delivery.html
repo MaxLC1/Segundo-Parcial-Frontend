@@ -1,0 +1,78 @@
+<div class="header-actions">
+  <div>
+    <h3>Recojos y Entregas</h3>
+    <p class="subtitle">Gestiona las órdenes de recojo de devoluciones asignadas a ti.</p>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="loading-state">
+  <p>Cargando órdenes...</p>
+</div>
+
+<div class="delivery-grid" *ngIf="!isLoading" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+  <!-- Tarjetas de órdenes de delivery -->
+  <div class="delivery-card glass-card" *ngFor="let d of deliveries" style="padding: 20px; border-radius: 12px; background: white; border-top: 4px solid var(--primary);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <span class="badge" [ngClass]="getBadgeClass(d.estado)">{{ d.estado }}</span>
+      <span class="text-muted" style="font-size: 0.85rem;">Orden #{{ d.id }}</span>
+    </div>
+    
+    <div class="card-body">
+      <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span class="badge" [ngStyle]="{'background': d.tipo === 'ENVÍO' ? '#e8f5e9' : '#fff3e0', 'color': d.tipo === 'ENVÍO' ? '#2e7d32' : '#e65100'}">
+          {{ d.tipo }}
+        </span>
+        <span class="text-muted" style="font-size: 0.8rem;" *ngIf="d.repartidor">
+          {{ d.repartidor.nombre_completo || 'Repartidor' }}
+        </span>
+        <span class="text-muted" style="font-size: 0.8rem; color: #f59e0b;" *ngIf="!d.repartidor">
+          Sin Asignar
+        </span>
+      </div>
+      
+      <div *ngIf="d.tipo === 'RECOJO'">
+        <h4 style="margin: 0 0 5px 0;">Devolución #{{ d.devolucion_id }}</h4>
+        <p class="text-muted" *ngIf="d.devolucion" style="margin: 0; font-size: 0.95rem;">Motivo: {{ d.devolucion.motivo }}</p>
+      </div>
+
+      <div *ngIf="d.tipo === 'ENVÍO'">
+        <h4 style="margin: 0 0 5px 0;">Venta #{{ d.venta_id }}</h4>
+        <p class="text-muted" *ngIf="d.venta" style="margin: 0; font-size: 0.95rem;">Dirección: {{ d.venta.direccion_envio || 'No especificada' }}</p>
+      </div>
+      
+      <p class="text-muted" *ngIf="(!d.devolucion && d.tipo==='RECOJO') || (!d.venta && d.tipo==='ENVÍO')" style="margin: 0; font-size: 0.95rem;">Buscando detalles...</p>
+    </div>
+    
+    <div class="card-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+      
+      <!-- Asignar Repartidor (Solo Admin) -->
+      <div *ngIf="isAdmin" style="display: flex; gap: 8px;">
+        <select class="input-field" [(ngModel)]="d.nuevoRepartidorId" style="flex: 1; margin: 0; padding: 8px; border-radius: 6px;">
+          <option [ngValue]="null" disabled selected>Asignar a...</option>
+          <option *ngFor="let r of repartidores" [ngValue]="r.id">{{ r.nombre_completo }}</option>
+        </select>
+        <button class="btn-primary outline" (click)="asignarRepartidor(d)" [disabled]="isSaving || d.repartidor_id === d.nuevoRepartidorId || !d.nuevoRepartidorId" style="padding: 8px 15px; font-size: 0.9rem;">
+          Asignar
+        </button>
+      </div>
+
+      <!-- Cambiar Estado -->
+      <div style="display: flex; gap: 8px;">
+        <select class="input-field" [(ngModel)]="d.nuevoEstado" style="flex: 1; margin: 0; padding: 8px; border-radius: 6px;">
+          <option value="Pendiente">Pendiente</option>
+          <option value="Asignado">Asignado</option>
+          <option value="En Camino">En Camino</option>
+          <option value="Recogido">Recogido</option>
+          <option value="Completado">Completado</option>
+        </select>
+        <button class="btn-primary" (click)="actualizarEstado(d)" [disabled]="isSaving || d.estado === d.nuevoEstado" style="padding: 8px 15px; font-size: 0.9rem;">
+          Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="deliveries.length === 0" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted);">
+    No tienes recojos asignados por el momento.
+  </div>
+</div>

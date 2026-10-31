@@ -1,0 +1,119 @@
+<!-- Hero Banner -->
+<section class="hero-section">
+  <div class="hero-content">
+    <h1>El futuro del E-commerce.</h1>
+    <p>Ropa de calidad premium con tecnología de prueba virtual (AR).</p>
+    <button class="btn-primary" (click)="scrollToCatalog()">Ver Catálogo</button>
+  </div>
+</section>
+
+<!-- Catálogo de Productos -->
+<section class="catalog-section" id="catalog">
+  <div class="section-header">
+    <h2>Novedades y Ofertas Especiales</h2>
+    <p class="text-muted">Descubre las últimas tendencias y oportunidades de liquidación.</p>
+  </div>
+
+  <!-- Banner Llamativo de Ofertas y Mayoreo -->
+  <div style="background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca); color: white; padding: 18px 24px; border-radius: 14px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4); flex-wrap: wrap; gap: 14px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="background: #ef4444; color: white; font-weight: bold; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px;">OFERTA COMERCIAL</span>
+        <span style="color: #a5b4fc; font-size: 0.88rem; font-weight: 600;">Reglas de Descuento Automático</span>
+      </div>
+      <h3 style="margin: 6px 0 4px; font-size: 1.25rem;">Liquidación de Temporadas Anteriores & Precios al Por Mayor</h3>
+      <p style="margin: 0; font-size: 0.88rem; color: #cbd5e1;">
+        1 Temporada anterior: <strong>30% OFF</strong> | 2 Temporadas anteriores: <strong>60% OFF</strong> | Compras de 3+ prendas: <strong>15% adicional</strong> en caja.
+      </p>
+    </div>
+    <div style="text-align: right;">
+      <span style="font-size: 1.8rem; font-weight: 900; color: #34d399;">Hasta 60%</span>
+      <div style="font-size: 0.78rem; color: #a5b4fc;">Descuento directo aplicado</div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Cargando productos...</div>
+
+  <div class="product-grid" *ngIf="!isLoading">
+    <div class="product-card glass-card" *ngFor="let producto of productos; let i = index" style="position: relative;">
+      
+      <!-- Badge de Descuento Llamativo -->
+      <div *ngIf="producto.descuento_aplicado_pct > 0" 
+           style="position: absolute; top: 12px; right: 12px; z-index: 10; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.82rem; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4); display: flex; align-items: center; gap: 4px;">
+        <span>-{{ producto.descuento_aplicado_pct }}% OFF</span>
+      </div>
+
+      <!-- Badge de Temporada Pasada -->
+      <div *ngIf="producto.antiguedad_temporadas === 1" 
+           style="position: absolute; top: 12px; left: 12px; z-index: 10; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); color: #93c5fd; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">
+        1 Temp. Pasada
+      </div>
+      <div *ngIf="producto.antiguedad_temporadas >= 2" 
+           style="position: absolute; top: 12px; left: 12px; z-index: 10; background: rgba(147, 51, 234, 0.85); backdrop-filter: blur(4px); color: #f3e8ff; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">
+        Outlet -60%
+      </div>
+
+      <!-- Contenedor Visual (AR, Imagen o Placeholder) -->
+      <div class="product-visual">
+        <ng-container *ngIf="producto.modelo_3d_url; else elseImage">
+          <model-viewer 
+            [src]="producto.modelo_3d_url" 
+            [alt]="producto.nombre"
+            auto-rotate 
+            camera-controls 
+            ar
+            shadow-intensity="1"
+            style="width: 100%; height: 250px; background-color: #f8f9fa; border-radius: 12px;">
+          </model-viewer>
+        </ng-container>
+        
+        <ng-template #elseImage>
+          <ng-container *ngIf="producto.imagen_url; else elseEmpty">
+            <div class="image-container" style="height: 250px; border-radius: 12px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+              <img [src]="producto.imagen_url" [alt]="producto.nombre" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+          </ng-container>
+        </ng-template>
+
+        <ng-template #elseEmpty>
+          <div class="placeholder-box">
+            <h2>#{{ i + 1 }}</h2>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="product-info">
+        <div class="brand">{{ producto.categoria?.nombre || 'Categoría' }}</div>
+        <h3 class="product-title">{{ producto.nombre }}</h3>
+        
+        <!-- Precios Antes y Después -->
+        <div style="margin: 8px 0 12px;">
+          <ng-container *ngIf="producto.descuento_aplicado_pct > 0; else regularPrice">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+              <span style="font-size: 0.85rem; color: #94a3b8; text-decoration: line-through;">
+                Antes: Bs. {{ producto.precio }}
+              </span>
+              <span style="font-size: 1.3rem; font-weight: 800; color: #059669;">
+                Ahora: Bs. {{ producto.precio_oferta }}
+              </span>
+            </div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 2px;">
+              ¡Ahorras Bs. {{ producto.ahorro_monto }} por liquidación!
+            </div>
+          </ng-container>
+          <ng-template #regularPrice>
+            <p class="product-price">Bs. {{ producto.precio }}</p>
+          </ng-template>
+        </div>
+
+        <button class="btn-primary outline full-width" (click)="addToCart(producto)">Añadir al carrito</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div *ngIf="!isLoading && productos.length === 0" class="empty-state">
+    No hay productos disponibles por el momento.
+  </div>
+</section>
+

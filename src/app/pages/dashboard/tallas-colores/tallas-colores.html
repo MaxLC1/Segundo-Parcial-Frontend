@@ -1,0 +1,92 @@
+<div class="header-actions">
+  <div>
+    <h3>Variantes (Tallas y Colores)</h3>
+    <p class="subtitle">Gestiona las variantes disponibles para los productos.</p>
+  </div>
+</div>
+
+<div class="split-layout">
+  <!-- Tallas -->
+  <div class="table-container">
+    <div class="table-header">
+      <h4>Tallas</h4>
+    </div>
+    
+    <div class="inline-add">
+      <input type="text" class="input-field" placeholder="Ej. S, M, L, 42" [(ngModel)]="nuevaTallaNombre" (keyup.enter)="guardarTalla()">
+      <button class="btn-primary" style="width:auto;" (click)="guardarTalla()" [disabled]="isSavingTalla || !nuevaTallaNombre">
+        {{ isSavingTalla ? '...' : '+ Agregar' }}
+      </button>
+    </div>
+
+    <div *ngIf="isLoadingTallas" class="loading-state">Cargando...</div>
+    <div class="table-scroll">
+      <table *ngIf="!isLoadingTallas">
+        <thead>
+          <tr>
+            <th>Talla</th>
+            <th width="160">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tallas">
+            <td class="font-bold">{{ t.nombre }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-delete">Borrar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="tallas.length === 0">
+            <td colspan="2" class="empty-state">No hay tallas registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Colores -->
+  <div class="table-container">
+    <div class="table-header">
+      <h4>Colores</h4>
+    </div>
+    
+    <div class="inline-add">
+      <input type="color" class="color-picker" [(ngModel)]="nuevoColorHex">
+      <input type="text" class="input-field" placeholder="Ej. Azul Marino" [(ngModel)]="nuevoColorNombre" (ngModelChange)="onColorNameChange($event)" (keyup.enter)="guardarColor()">
+      <button class="btn-primary" style="width:auto;" (click)="guardarColor()" [disabled]="isSavingColor || !nuevoColorNombre">
+        {{ isSavingColor ? '...' : '+ Agregar' }}
+      </button>
+    </div>
+
+    <div *ngIf="isLoadingColores" class="loading-state">Cargando...</div>
+    <div class="table-scroll">
+      <table *ngIf="!isLoadingColores">
+        <thead>
+          <tr>
+            <th width="50">Color</th>
+            <th>Nombre</th>
+            <th width="160">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of colores">
+            <td>
+              <div class="color-swatch" [style.background-color]="c.codigo_hex"></div>
+            </td>
+            <td class="font-bold">{{ c.nombre }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-delete">Borrar</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="colores.length === 0">
+            <td colspan="3" class="empty-state">No hay colores registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

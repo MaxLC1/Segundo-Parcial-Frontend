@@ -1,0 +1,65 @@
+<div class="header-actions">
+  <div>
+    <h3>Gestión de Proveedores</h3>
+    <p class="subtitle">Administra los proveedores de tus productos.</p>
+  </div>
+  <button class="btn-primary" (click)="openModal()">+ Nuevo Proveedor</button>
+</div>
+
+<div class="table-container">
+  <div *ngIf="isLoading" class="loading-state">Cargando...</div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre del Proveedor</th>
+        <th>Contacto</th>
+        <th width="120">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of proveedores">
+        <td>#{{ p.id }}</td>
+        <td class="font-bold">{{ p.nombre }}</td>
+        <td>{{ p.contacto || 'Sin contacto' }}</td>
+        <td class="action-buttons">
+          <button class="btn-edit" (click)="editProveedor(p)">Editar</button>
+        </td>
+      </tr>
+      <tr *ngIf="proveedores.length === 0">
+        <td colspan="4" class="empty-state">No hay proveedores registrados.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para Nuevo/Editar Proveedor -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ editingId ? 'Editar Proveedor' : 'Crear Proveedor' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="input-group">
+        <label>Nombre del Proveedor</label>
+        <input type="text" class="input-field" placeholder="Ej. Textil XYZ" [(ngModel)]="nuevoProveedor.nombre">
+      </div>
+      
+      <div class="input-group">
+        <label>Contacto (Opcional)</label>
+        <input type="text" class="input-field" placeholder="Teléfono o Email" [(ngModel)]="nuevoProveedor.contacto">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardarProveedor()" [disabled]="isSaving || !nuevoProveedor.nombre">
+        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+

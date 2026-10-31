@@ -1,0 +1,20 @@
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.badge.pendiente { background: #ffebee; color: #d32f2f; }
+.badge.asignado { background: #e3f2fd; color: #1976d2; }
+.badge.en-camino { background: #fff3e0; color: #f57c00; }
+.badge.recogido { background: #e8f5e9; color: #388e3c; }
+.badge.completado { background: #eeeeee; color: #616161; }
+
+.delivery-card {
+  transition: transform 0.2s;
+}
+
+.delivery-card:hover {
+  transform: translateY(-2px);
+}

@@ -1,0 +1,100 @@
+<div class="header-actions">
+  <div>
+    <h3>Gestión de Usuarios</h3>
+    <p class="subtitle">Administra los accesos y roles del personal de la tienda.</p>
+  </div>
+  <button class="btn-primary" (click)="openModal()">+ Nuevo Usuario</button>
+</div>
+
+<div class="table-container">
+  <div *ngIf="isLoading" class="loading-state">Cargando...</div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>Nombre Completo</th>
+        <th>Correo Electrónico</th>
+        <th>Rol de Sistema</th>
+        <th>Estado</th>
+        <th width="120">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of usuarios">
+        <td class="font-bold">{{ u.nombre_completo }}</td>
+        <td>{{ u.email }}</td>
+        <td><span class="badge badge-rol">{{ u.rol?.nombre || 'Sin Rol' }}</span></td>
+        <td>
+          <span class="status-indicator" [class.active]="u.is_active">
+            {{ u.is_active ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-edit" (click)="editarUsuario(u)">Editar</button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="usuarios.length === 0">
+        <td colspan="5" class="empty-state">No hay usuarios registrados (excepto súper admins).</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Editar Empleado' : 'Registrar Empleado' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="alert-error" *ngIf="errorMsg">
+        {{ errorMsg }}
+      </div>
+
+      <div class="input-group">
+        <label>Nombre Completo</label>
+        <input type="text" class="input-field" placeholder="Ej. Juan Pérez" [(ngModel)]="nombre">
+      </div>
+
+      <div class="input-group">
+        <label>Correo Electrónico</label>
+        <input type="email" class="input-field" placeholder="juan@tienda.com" [(ngModel)]="email">
+      </div>
+
+      <div class="grid-2-col">
+        <div class="input-group">
+          <label>Contraseña {{ isEditing ? '(Opcional)' : '' }}</label>
+          <input type="password" class="input-field" placeholder="Min. 8 chars, 1 num, 1 especial" [(ngModel)]="password">
+        </div>
+        
+        <div class="input-group">
+          <label>Rol de Sistema</label>
+          <select class="input-field" [(ngModel)]="rol_id">
+            <option [ngValue]="null" disabled selected>Seleccionar rol...</option>
+            <option *ngFor="let r of roles" [ngValue]="r.id">{{ r.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group" *ngIf="isEditing" style="margin-top: 15px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="is_active" style="transform: scale(1.2);">
+          Cuenta Activa (El empleado puede iniciar sesión)
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardar()" 
+              [disabled]="isSaving || !nombre || !email || !rol_id || (!isEditing && !password)">
+        {{ isSaving ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Cuenta') }}
+      </button>
+    </div>
+  </div>
+</div>
+

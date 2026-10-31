@@ -1,0 +1,56 @@
+<div class="header-actions">
+  <div>
+    <h3>Historial de Reservas y Ventas</h3>
+    <p class="subtitle">Monitorea todas las transacciones realizadas desde la aplicación móvil.</p>
+  </div>
+  <button class="btn-primary" (click)="loadMetadata()">
+    <span class="icon">↻</span> Actualizar
+  </button>
+</div>
+
+<div class="table-container">
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando historial de transacciones...</p>
+  </div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>ID / Fecha</th>
+        <th>Cliente</th>
+        <th>Sucursal de Recojo</th>
+        <th>Artículos</th>
+        <th>Total</th>
+        <th width="120">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let venta of ventas">
+        <td>
+          <div class="font-bold">#{{ venta.id }}</div>
+          <div class="text-muted" style="font-size: 0.8rem;">{{ formatearFecha(venta.fecha) }}</div>
+        </td>
+        <td class="font-bold text-highlight">{{ getUsuarioNombre(venta.usuario_id) }}</td>
+        <td><span class="badge badge-sucursal">{{ getSucursalNombre(venta.sucursal_id) }}</span></td>
+        <td>
+          <ul class="items-list">
+            <li *ngFor="let det of venta.detalles">
+              {{ det.cantidad }}x <strong>{{ getProductoNombre(det.producto_id) }}</strong> 
+              <span class="text-muted">({{ getTallaNombre(det.talla_id) }}, {{ getColorNombre(det.color_id) }})</span>
+            </li>
+          </ul>
+        </td>
+        <td class="font-bold text-orange">Bs. {{ venta.total }}</td>
+        <td>
+          <!-- Al ser reservas desde la app, quedan como Pendientes de Recojo -->
+          <span class="badge badge-pending">Reserva Activa</span>
+        </td>
+      </tr>
+      <tr *ngIf="ventas.length === 0">
+        <td colspan="6" class="empty-state">No hay ventas ni reservas registradas aún.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+

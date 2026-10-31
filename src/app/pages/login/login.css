@@ -1,0 +1,115 @@
+.login-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--surface-color);
+  padding: 40px;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.logo-container {
+  margin-bottom: 40px;
+}
+
+.logo-container h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.logo-container p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.input-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.error-msg {
+  color: var(--error);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  background: #fef2f2;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-image-side {
+  flex: 1.2;
+  background-color: var(--primary);
+  /* Imagen de tienda de ropa de Unsplash */
+  background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.image-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  width: 100%;
+  padding: 80px 60px 60px;
+  color: white;
+}
+
+.image-overlay h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.image-overlay p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 500px;
+}
+
+@media (max-width: 900px) {
+  .login-image-side {
+    display: none;
+  }
+}

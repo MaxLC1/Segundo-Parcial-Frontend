@@ -1,0 +1,93 @@
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+h3 { color: var(--text-main); font-size: 1.5rem; font-weight: 700; }
+.subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+.btn-primary { width: auto; padding: 10px 20px; display: flex; gap: 8px; align-items: center; }
+
+.badge-sucursal {
+  background-color: var(--primary);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-pending {
+  background-color: #f59e0b; /* Ámbar brillante */
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-container {
+  background: var(--surface-color);
+  border: var(--card-border);
+  border-radius: 12px;
+  overflow-y: auto;
+  overflow-x: auto;
+  max-height: calc(100vh - 180px);
+  box-shadow: var(--card-shadow);
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+th { 
+  background-color: #f8fafc; 
+  color: var(--text-muted); 
+  font-weight: 700; 
+  font-size: 0.8rem; 
+  text-transform: uppercase; 
+  letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+td { color: var(--text-main); font-size: 0.95rem; vertical-align: top; }
+
+.font-bold { font-weight: 700; }
+.text-muted { color: var(--text-muted); }
+.text-highlight { color: var(--text-main); font-weight: 600; }
+.text-orange { color: var(--primary); font-size: 1.1rem; }
+
+.items-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style-type: disc;
+  color: var(--text-main);
+}
+.items-list li {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+.items-list strong {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.loading-state, .empty-state { padding: 60px; text-align: center; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 16px; font-size: 1.1rem; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,144 @@
+<div class="header-actions">
+  <div>
+    <h3>Inventario Central</h3>
+    <p class="subtitle">Gestión global de stock en todas las sucursales.</p>
+  </div>
+  <button *ngIf="userRole !== 'Proveedor' && userRole !== 'Cajero'" class="btn-primary" (click)="openModal()">+ Ajustar Stock</button>
+</div>
+
+<div class="search-bar-container glass-card" style="display: flex; gap: 15px; margin-bottom: 20px; padding: 15px 20px; align-items: center; border-radius: 12px; background: white;">
+  <div style="flex: 1; position: relative;">
+    <svg style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <input type="text" class="input-field" placeholder="Buscar por producto, color, talla, o sucursal..." 
+           [(ngModel)]="searchText" (input)="filtrarInventario()" 
+           style="width: 100%; margin: 0; padding-left: 45px; border-radius: 8px; border: 1px solid #ddd; height: 45px; font-size: 1rem;">
+  </div>
+
+  <div style="width: 220px;">
+    <select class="input-field" [(ngModel)]="filtroSucursal" (change)="filtrarInventario()" style="width: 100%; height: 45px; border-radius: 8px; border: 1px solid #ddd; margin: 0; padding: 0 15px; cursor: pointer;">
+      <option [ngValue]="null">Todas las sucursales</option>
+      <option *ngFor="let s of sucursales" [ngValue]="s.id">{{ s.nombre }}</option>
+    </select>
+  </div>
+  
+  <button class="btn-primary" (click)="iniciarBusquedaPorVoz()" 
+          [ngClass]="{'pulse-animation': isListening}" 
+          title="Búsqueda por Voz"
+          style="display: flex; align-items: center; gap: 8px; height: 45px; padding: 0 20px;">
+    
+    <svg *ngIf="!isListening" style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+    <svg *ngIf="isListening" style="width: 18px; height: 18px; color: #ff4444;" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"></circle></svg>
+    
+    <span>{{ isListening ? 'Escuchando...' : 'Búsqueda por Voz' }}</span>
+  </button>
+</div>
+
+<div class="table-container glass-card" *ngIf="!isLoading">
+  <table>
+    <thead>
+      <tr>
+        <th>Sucursal</th>
+        <th>Producto</th>
+        <th>Col. / Temp.</th>
+        <th>Proveedor</th>
+        <th>Talla</th>
+        <th>Color</th>
+        <th>Unidades Totales</th>
+        <th *ngIf="userRole !== 'Proveedor' && userRole !== 'Cajero'">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let inv of filteredInventarios">
+        <td>{{ inv.sucursal?.nombre || 'General' }}</td>
+        <td class="font-bold">{{ inv.producto?.nombre }}</td>
+        <td>{{ getColeccionName(inv.producto?.id) }}</td>
+        <td class="text-muted">{{ getProveedorName(inv.producto?.id) }}</td>
+        <td><span class="badge">{{ inv.talla?.nombre }}</span></td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div [style.background-color]="inv.color?.codigo_hex" style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid #ddd;"></div>
+            <span>{{ inv.color?.nombre }}</span>
+          </div>
+        </td>
+        <td class="font-bold text-primary">{{ inv.cantidad }}</td>
+        <td *ngIf="userRole !== 'Proveedor' && userRole !== 'Cajero'">
+          <button class="btn-secondary small" (click)="ajustarInventario(inv)">Editar</button>
+        </td>
+      </tr>
+      <tr *ngIf="filteredInventarios.length === 0">
+        <td colspan="8" class="empty-state">No se encontró inventario con esos criterios.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Ajustar Stock' : 'Ingreso de Stock' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="input-group">
+        <label>Sucursal Destino</label>
+        <select class="input-field" [(ngModel)]="nuevoRegistro.sucursal_id" [disabled]="isEditing">
+          <option [ngValue]="null" disabled selected>Selecciona una sucursal...</option>
+          <option *ngFor="let s of sucursales" [ngValue]="s.id">{{ s.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Producto</label>
+        <select class="input-field" [(ngModel)]="nuevoRegistro.producto_id" [disabled]="isEditing">
+          <option [ngValue]="null" disabled selected>Selecciona un producto...</option>
+          <option *ngFor="let p of productos" [ngValue]="p.id">{{ p.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="grid-2-col" *ngIf="nuevoRegistro.producto_id" style="margin-bottom: 16px; opacity: 0.7;">
+        <div class="input-group">
+          <label>Proveedor Asignado</label>
+          <input type="text" class="input-field" disabled [value]="getProveedorName(nuevoRegistro.producto_id)">
+        </div>
+        <div class="input-group">
+          <label>Colección Asignada</label>
+          <input type="text" class="input-field" disabled [value]="getColeccionName(nuevoRegistro.producto_id)">
+        </div>
+      </div>
+
+      <div class="grid-2-col">
+        <div class="input-group">
+          <label>Talla</label>
+          <select class="input-field" [(ngModel)]="nuevoRegistro.talla_id" [disabled]="isEditing">
+            <option [ngValue]="null" disabled selected>Talla...</option>
+            <option *ngFor="let t of tallas" [ngValue]="t.id">{{ t.nombre }}</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label>Color</label>
+          <select class="input-field" [(ngModel)]="nuevoRegistro.color_id" [disabled]="isEditing">
+            <option [ngValue]="null" disabled selected>Color...</option>
+            <option *ngFor="let c of colores" [ngValue]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>{{ isEditing ? 'Nueva Cantidad Física (Ajuste)' : 'Cantidad a Ingresar' }}</label>
+        <input type="number" class="input-field text-center font-bold" min="0" [(ngModel)]="nuevoRegistro.cantidad">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardar()" 
+              [disabled]="isSaving || !nuevoRegistro.sucursal_id || !nuevoRegistro.producto_id || !nuevoRegistro.talla_id || !nuevoRegistro.color_id || nuevoRegistro.cantidad < 0">
+        {{ isSaving ? 'Guardando...' : (isEditing ? 'Guardar Ajuste' : 'Confirmar Ingreso') }}
+      </button>
+    </div>
+  </div>
+</div>
+

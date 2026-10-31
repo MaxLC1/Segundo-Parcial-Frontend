@@ -1,0 +1,75 @@
+<div class="header-actions">
+  <div>
+    <h3>Gestión de Sucursales</h3>
+    <p class="subtitle">Administra los puntos de venta físicos de la tienda.</p>
+  </div>
+  <button class="btn-primary" (click)="openModal()">+ Nueva Sucursal</button>
+</div>
+
+<div class="table-container">
+  <div *ngIf="isLoading" class="loading-state">Cargando...</div>
+  
+  <table *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre de Sucursal</th>
+        <th>Ciudad</th>
+        <th>Dirección</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let suc of listaSucursales">
+        <td>#{{ suc.id }}</td>
+        <td class="font-bold">{{ suc.nombre }}</td>
+        <td>{{ suc.ciudad?.nombre || 'Desconocida' }}</td>
+        <td class="text-muted">{{ suc.direccion || 'N/A' }}</td>
+        <td>
+          <button class="btn-edit" (click)="editarSucursal(suc)">Editar</button>
+        </td>
+      </tr>
+      <tr *ngIf="listaSucursales.length === 0">
+        <td colspan="5" class="empty-state">No hay sucursales registradas.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para Nueva Sucursal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content glass-card">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Editar Sucursal' : 'Crear Sucursal' }}</h3>
+      <button class="btn-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="input-group">
+        <label>Ciudad / Departamento</label>
+        <select class="input-field" [(ngModel)]="ciudad_id">
+          <option [ngValue]="null" disabled selected>Selecciona una opción...</option>
+          <option *ngFor="let ciu of ciudades" [ngValue]="ciu.id">{{ ciu.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Nombre de la Sucursal</label>
+        <input type="text" class="input-field" placeholder="Ej. Sucursal Central" [(ngModel)]="nombre">
+      </div>
+      
+      <div class="input-group">
+        <label>Dirección Física</label>
+        <textarea class="input-field" rows="2" placeholder="Calle, Avenida, Zona..." [(ngModel)]="direccion"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button class="btn-primary" (click)="guardar()" [disabled]="isSaving || !nombre || !ciudad_id">
+        {{ isSaving ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Guardar') }}
+      </button>
+    </div>
+  </div>
+</div>
+

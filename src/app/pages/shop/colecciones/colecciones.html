@@ -1,0 +1,137 @@
+<section class="catalog-section" style="padding-top: 80px; max-width: 1200px; margin: 0 auto; padding-left: 20px; padding-right: 20px;">
+  <div class="section-header">
+    <h2>Nuestras Colecciones</h2>
+    <p class="text-muted">Explora la moda agrupada por estilo y temporada.</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">Cargando colecciones...</div>
+
+  <div *ngIf="!isLoading">
+    <!-- Colecciones con productos -->
+    <div *ngFor="let col of colecciones" class="collection-block">
+      <ng-container *ngIf="getProductosPorColeccion(col.id).length > 0">
+        <h3 class="collection-title">{{ col.nombre }}</h3>
+        <hr class="collection-divider">
+        
+        <div class="product-grid">
+          <div class="product-card glass-card" *ngFor="let producto of getProductosPorColeccion(col.id); let i = index">
+            <!-- Visual Contenedor -->
+            <div class="product-visual">
+              <button class="view-toggle" *ngIf="producto.modelo_3d_url && producto.imagen_url" (click)="toggleView(producto)">
+                Ver en {{ getViewMode(producto) === '2D' ? '3D' : '2D' }}
+              </button>
+
+              <ng-container *ngIf="getViewMode(producto) === '3D' && producto.modelo_3d_url; else elseImage">
+                <model-viewer 
+                  [src]="producto.modelo_3d_url" 
+                  [alt]="producto.nombre"
+                  auto-rotate 
+                  camera-controls 
+                  ar
+                  shadow-intensity="1"
+                  style="width: 100%; height: 250px; background-color: #f8f9fa; border-radius: 12px;">
+                </model-viewer>
+              </ng-container>
+              
+              <ng-template #elseImage>
+                <ng-container *ngIf="producto.imagen_url; else elseEmpty">
+                  <div class="image-container" style="height: 250px; border-radius: 12px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                    <img [src]="producto.imagen_url" [alt]="producto.nombre" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                  </div>
+                </ng-container>
+              </ng-template>
+
+              <ng-template #elseEmpty>
+                <div class="placeholder-box">
+                  <h2>#{{ i + 1 }}</h2>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Info del Producto -->
+            <div class="product-info">
+              <div class="brand">{{ producto.categoria?.nombre || 'Categoría' }}</div>
+              <h3 class="product-title">{{ producto.nombre }}</h3>
+              <p class="product-price">Bs. {{ producto.precio }}</p>
+              
+              <div style="display: flex; gap: 8px; margin-bottom: 12px; margin-top: 10px;">
+                <select class="input-field" [(ngModel)]="selectedTalla[producto.id]" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
+                  <option [ngValue]="undefined" disabled selected>Talla</option>
+                  <option *ngFor="let t of tallas" [ngValue]="t.id">{{ t.nombre }}</option>
+                </select>
+                <select class="input-field" [(ngModel)]="selectedColor[producto.id]" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
+                  <option [ngValue]="undefined" disabled selected>Color</option>
+                  <option *ngFor="let c of colores" [ngValue]="c.id">{{ c.nombre }}</option>
+                </select>
+              </div>
+
+              <button class="btn-primary outline full-width" (click)="addToCart(producto)">Añadir al carrito</button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Productos sin colección específica -->
+    <div class="collection-block" *ngIf="getProductosSinColeccion().length > 0">
+      <h3 class="collection-title text-muted">Otras Prendas</h3>
+      <hr class="collection-divider">
+      
+      <div class="product-grid">
+        <div class="product-card glass-card" *ngFor="let producto of getProductosSinColeccion(); let i = index">
+          <div class="product-visual">
+            <button class="view-toggle" *ngIf="producto.modelo_3d_url && producto.imagen_url" (click)="toggleView(producto)">
+              Ver en {{ getViewMode(producto) === '2D' ? '3D' : '2D' }}
+            </button>
+
+            <ng-container *ngIf="getViewMode(producto) === '3D' && producto.modelo_3d_url; else elseImage2">
+              <model-viewer 
+                [src]="producto.modelo_3d_url" 
+                [alt]="producto.nombre"
+                auto-rotate 
+                camera-controls 
+                ar
+                shadow-intensity="1"
+                style="width: 100%; height: 250px; background-color: #f8f9fa; border-radius: 12px;">
+              </model-viewer>
+            </ng-container>
+            
+            <ng-template #elseImage2>
+              <ng-container *ngIf="producto.imagen_url; else elseEmpty2">
+                <div class="image-container" style="height: 250px; border-radius: 12px; overflow: hidden; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                  <img [src]="producto.imagen_url" [alt]="producto.nombre" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+              </ng-container>
+            </ng-template>
+
+            <ng-template #elseEmpty2>
+              <div class="placeholder-box">
+                <h2>#{{ i + 1 }}</h2>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="product-info">
+            <div class="brand">{{ producto.categoria?.nombre || 'Categoría' }}</div>
+            <h3 class="product-title">{{ producto.nombre }}</h3>
+            <p class="product-price">Bs. {{ producto.precio }}</p>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; margin-top: 10px;">
+              <select class="input-field" [(ngModel)]="selectedTalla[producto.id]" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
+                <option [ngValue]="undefined" disabled selected>Talla</option>
+                <option *ngFor="let t of tallas" [ngValue]="t.id">{{ t.nombre }}</option>
+              </select>
+              <select class="input-field" [(ngModel)]="selectedColor[producto.id]" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem;">
+                <option [ngValue]="undefined" disabled selected>Color</option>
+                <option *ngFor="let c of colores" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+
+            <button class="btn-primary outline full-width" (click)="addToCart(producto)">Añadir al carrito</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

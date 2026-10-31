@@ -1,0 +1,291 @@
+<div class="reportes-hub">
+  <!-- Encabezado y Navegación de Pestañas -->
+  <div class="header-section">
+    <div>
+      <h2 class="title">Centro de Inteligencia de Negocios y Analítica</h2>
+      <p class="subtitle">
+        Empresa: <strong>{{ empresaNombre }}</strong> &bull; Plan Actual: 
+        <span class="plan-badge" [ngClass]="{'pro': planNombre === 'Profesional', 'basic': planNombre === 'Básico'}">
+          {{ planNombre }}
+        </span>
+      </p>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="tabs-control">
+      <button class="tab-btn" [class.active]="activeTab === 'ia'" (click)="seleccionarTab('ia')">
+        Reportes Generativos (IA)
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'ml'" (click)="seleccionarTab('ml')">
+        Analítica Machine Learning
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'kpis'" (click)="seleccionarTab('kpis')">
+        KPIs Convencionales
+      </button>
+    </div>
+  </div>
+
+  <!-- AVISO DE BLOQUEO SI PLAN BÁSICO -->
+  <div *ngIf="!planPermiteIA && (activeTab === 'ia' || activeTab === 'ml')" class="plan-lock-card">
+    <div class="lock-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div class="lock-content">
+      <h3>Función restringida por Plan de Suscripción</h3>
+      <p>{{ errorMensajeIA }}</p>
+      <button class="btn-upgrade" (click)="simularMejoraPlanProfesional()">
+        Actualizar a Plan Profesional (Simulación)
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 1: REPORTES GENERATIVOS CON IA (Texto y Voz)                  -->
+  <!-- ===================================================================== -->
+  <div *ngIf="planPermiteIA && activeTab === 'ia'" class="tab-content">
+    <!-- Barra de consulta por Lenguaje Natural y Voz -->
+    <div class="query-card">
+      <div class="input-group-voice">
+        <input 
+          type="text" 
+          [(ngModel)]="queryTexto" 
+          (keyup.enter)="ejecutarConsultaIA()"
+          placeholder="Escribe tu consulta empresarial o presiona el micrófono (ej: 'Ventas por sucursal', 'Top 10 productos')..."
+          class="query-input"
+          [disabled]="isLoadingIA"
+        />
+        
+        <button 
+          class="voice-btn" 
+          [class.recording]="isListeningVoice"
+          (click)="iniciarReconocimientoVoz()"
+          [title]="isListeningVoice ? 'Escuchando tu voz...' : 'Consultar mediante voz'">
+          <span class="material-icons">{{ isListeningVoice ? 'mic' : 'mic_none' }}</span>
+          <span>{{ isListeningVoice ? 'Escuchando...' : 'Voz' }}</span>
+        </button>
+
+        <button class="submit-btn" (click)="ejecutarConsultaIA()" [disabled]="isLoadingIA">
+          <span *ngIf="!isLoadingIA">Generar Reporte</span>
+          <span *ngIf="isLoadingIA">Analizando...</span>
+        </button>
+      </div>
+
+      <!-- Sugerencias rápidas -->
+      <div class="chips-container">
+        <span class="chip-label">Consultas sugeridas:</span>
+        <button *ngFor="let s of consultasSugeridas" class="chip-btn" (click)="ejecutarConsultaIA(s)">
+          {{ s }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div *ngIf="isLoadingIA" class="loading-box">
+      <div class="spinner"></div>
+      <p>La Inteligencia Artificial está interpretando tu solicitud y analizando la base de datos...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMensajeIA && !isLoadingIA" class="error-banner">
+      {{ errorMensajeIA }}
+    </div>
+
+    <!-- RESULTADOS DEL REPORTE -->
+    <div *ngIf="reporteIA && !isLoadingIA" class="results-container">
+      <!-- Tarjeta Narrativa Generativa -->
+      <div class="narrative-card">
+        <div class="narrative-header">
+          <span class="badge-ai">Análisis Generativo de Negocio</span>
+          <h3>{{ reporteIA.titulo }}</h3>
+        </div>
+        <p class="narrative-text">{{ reporteIA.narrativa_ia }}</p>
+        
+        <!-- Acciones de Exportación -->
+        <div class="export-actions">
+          <button class="export-btn excel" (click)="descargarExcel()">
+            Exportar a Excel (.xlsx)
+          </button>
+          <button class="export-btn pdf" (click)="descargarPdf()">
+            Exportar a PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Gráfico Dinámico -->
+      <div class="chart-card">
+        <h4>Visualización Gráfica Interactiva</h4>
+        <div class="chart-wrapper">
+          <canvas #chartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Tabla de Datos Real -->
+      <div class="table-card">
+        <h4>Detalle Tabular de Datos</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th *ngFor="let col of reporteIA.columnas">{{ col }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fila of reporteIA.filas">
+                <td *ngFor="let col of reporteIA.columnas">{{ fila[col] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 2: ANALÍTICA CON MACHINE LEARNING (Supervisado / No Supervisado)-->
+  <!-- ===================================================================== -->
+  <div *ngIf="planPermiteIA && activeTab === 'ml'" class="tab-content">
+    <div *ngIf="isLoadingML" class="loading-box">
+      <div class="spinner"></div>
+      <p>Entrenando y evaluando modelos de Machine Learning sobre los datos del tenant...</p>
+    </div>
+
+    <div *ngIf="dashboardML && !isLoadingML" class="ml-dashboard">
+      <!-- Fila 1: Métricas de los Modelos -->
+      <div class="ml-metrics-grid">
+        <!-- Tarjeta Modelo Supervisado -->
+        <div class="metric-card supervised">
+          <div class="card-tag">Aprendizaje Supervisado</div>
+          <h3>{{ dashboardML.supervisado.algoritmo }}</h3>
+          <p class="metric-desc">Predicción de variable objetivo (Demanda y Facturación en BOB)</p>
+          <div class="metric-numbers">
+            <div class="metric-item">
+              <span class="num-val highlight">{{ dashboardML.supervisado.r2_score }}</span>
+              <span class="num-lbl">Coeficiente R² (Precisión)</span>
+            </div>
+            <div class="metric-item">
+              <span class="num-val">{{ dashboardML.supervisado.mse }}</span>
+              <span class="num-lbl">Error Cuadrático Medio (MSE)</span>
+            </div>
+            <div class="metric-item">
+              <span class="num-val">{{ dashboardML.supervisado.muestras }}</span>
+              <span class="num-lbl">Muestras Evaluadas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Modelo No Supervisado -->
+        <div class="metric-card unsupervised">
+          <div class="card-tag">Aprendizaje No Supervisado</div>
+          <h3>Clustering K-Means de Clientes</h3>
+          <p class="metric-desc">Identificación de patrones y agrupación comportamental sin etiquetas previas</p>
+          <div class="clusters-summary">
+            <div *ngFor="let s of dashboardML.segmentacion_clientes" class="cluster-mini-item">
+              <strong>{{ s.nombre_segmento }}</strong>
+              <span>{{ s.porcentaje }}% de clientes (Ticket: BOB {{ s.ticket_promedio_bob }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 2: Gráfico de Predicción Supervisada de Demanda -->
+      <div class="chart-card">
+        <div class="chart-header-flex">
+          <h4>Predicción de Demanda Próximos 7 Días (Modelo Supervisado)</h4>
+          <span class="badge-active">Regresión Activa</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas #mlChartCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Fila 3: Segmentación Detallada de Clientes (No Supervisado) -->
+      <div class="table-card">
+        <h4>Segmentación de Clientes por Comportamiento de Compra (K-Means)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cluster</th>
+                <th>Perfil de Cliente</th>
+                <th>Clientes</th>
+                <th>% Cartera</th>
+                <th>Frecuencia Mensual</th>
+                <th>Ticket Promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let seg of dashboardML.segmentacion_clientes">
+                <td>#{{ seg.cluster_id + 1 }}</td>
+                <td><strong>{{ seg.nombre_segmento }}</strong></td>
+                <td>{{ seg.cantidad_clientes }}</td>
+                <td>{{ seg.porcentaje }}%</td>
+                <td>{{ seg.frecuencia_compras_mes }} compras/mes</td>
+                <td>BOB {{ seg.ticket_promedio_bob | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fila 4: Insights de Negocio -->
+      <div class="insights-card">
+        <h4>Insights Estratégicos Detectados por los Modelos</h4>
+        <ul>
+          <li *ngFor="let ins of dashboardML.insights_ia">{{ ins }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PESTAÑA 3: KPIS CONVENCIONALES                                        -->
+  <!-- ===================================================================== -->
+  <div *ngIf="activeTab === 'kpis'" class="tab-content">
+    <div *ngIf="isLoadingKpis" class="loading-box">
+      <div class="spinner"></div>
+      <p>Cargando indicadores de la tienda...</p>
+    </div>
+
+    <div *ngIf="reporteKpis && !isLoadingKpis" class="kpi-grid">
+      <div class="kpi-card glass-card">
+        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg></div>
+        <div class="kpi-info">
+          <h3>Ingresos Totales</h3>
+          <p class="kpi-value">BOB {{ reporteKpis.total_ingresos | number:'1.2-2' }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card glass-card">
+        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <div class="kpi-info">
+          <h3>Transacciones Confirmadas</h3>
+          <p class="kpi-value">{{ reporteKpis.total_ventas }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card glass-card">
+        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <div class="kpi-info">
+          <h3>Ticket Promedio</h3>
+          <p class="kpi-value">BOB {{ reporteKpis.ticket_promedio | number:'1.2-2' }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card glass-card full-width">
+        <h3>Desglose por Método de Pago</h3>
+        <div class="methods-breakdown">
+          <div class="method-item">
+            <span>Efectivo:</span>
+            <strong>{{ reporteKpis.ventas_por_metodo?.Efectivo || 0 }}</strong>
+          </div>
+          <div class="method-item">
+            <span>Código QR:</span>
+            <strong>{{ reporteKpis.ventas_por_metodo?.QR || 0 }}</strong>
+          </div>
+          <div class="method-item">
+            <span>Tarjeta / Digital:</span>
+            <strong>{{ reporteKpis.ventas_por_metodo?.Stripe || 0 }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
