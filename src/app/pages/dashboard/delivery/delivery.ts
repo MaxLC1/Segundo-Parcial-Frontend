@@ -22,7 +22,8 @@ export class Delivery implements OnInit {
   repartidores: any[] = [];
 
   constructor(private cdr: ChangeDetectorRef, private auth: Auth) {
-    this.isAdmin = this.auth.getRole() === 'Administrador';
+    const role = this.auth.getRole();
+    this.isAdmin = role === 'Administrador' || role === 'AdministradorPlataforma';
   }
 
   ngOnInit() {

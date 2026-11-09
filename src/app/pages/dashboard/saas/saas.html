@@ -13,16 +13,20 @@
 
   <!-- Alertas de estado -->
   <div *ngIf="error" class="alert-box error" role="alert">
-    <span>⚠️ {{ error }}</span>
+    <span>{{ error }}</span>
   </div>
   <div *ngIf="message" class="alert-box success" role="status">
-    <span>✅ {{ message }}</span>
+    <span>{{ message }}</span>
   </div>
 
   <!-- Formulario de Aprovisionamiento (Solo para Administrador de Plataforma) -->
   <div *ngIf="platform" class="glass-card form-section">
     <div class="card-title-box">
-      <div class="icon-circle">🏢</div>
+      <div class="icon-circle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M11 11h2M11 15h2M16 11h2M16 15h2M9 21V3h6v18"/>
+        </svg>
+      </div>
       <div>
         <h3>Registrar Nueva Empresa Contratante</h3>
         <p class="card-desc">Crea un nuevo tenant aislado junto a las credenciales de su primer administrador de tienda.</p>
@@ -150,7 +154,7 @@
           <div class="metric-row date-row">
             <span class="metric-label">Vencimiento del Plan:</span>
             <span class="metric-value date-val">
-              📅 {{ e.limites?.fecha_vencimiento ? (e.limites?.fecha_vencimiento | date: 'mediumDate') : 'Indefinido' }}
+              {{ e.limites?.fecha_vencimiento ? (e.limites?.fecha_vencimiento | date: 'mediumDate') : 'Indefinido' }}
             </span>
           </div>
 

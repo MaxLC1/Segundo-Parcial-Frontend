@@ -86,42 +86,105 @@ import { FormsModule } from '@angular/forms';
         required
       ></textarea>
     </label>
-    <p>
-      Importe original:
-      <strong>Bs. {{ ((detail?.precio_unitario || 0) * data.cantidad).toFixed(2) }}</strong
-      >. La tienda aplicará su política de devolución.
-    </p>
-    <button
-      class="btn-primary"
-      type="submit"
-      [disabled]="busy || !data.venta_id || !data.detalle_venta_id"
-    >
-      {{ busy ? 'Guardando…' : 'Registrar solicitud' }}
-    </button>
+    <div class="summary-banner">
+      <span class="summary-label">Importe Original de la Prenda:</span>
+      <span class="summary-val">Bs. {{ ((detail?.precio_unitario || 0) * data.cantidad).toFixed(2) }}</span>
+      <span class="summary-hint">La tienda aplicará su política de devolución y cálculo de diferencias automáticamente.</span>
+    </div>
+    <div class="submit-row">
+      <button
+        class="btn-submit-return"
+        type="submit"
+        [disabled]="busy || !data.venta_id || !data.detalle_venta_id"
+      >
+        {{ busy ? 'Procesando...' : 'Registrar Solicitud de Devolución' }}
+      </button>
+    </div>
   </form>`,
   styles: [
     `
       .return-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
       }
       label {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
       }
       input,
       select,
       textarea {
-        padding: 10px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
         border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        background: var(--bg-card, #fff);
-        color: inherit;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #1e293b;
+        outline: none;
+        transition: all 0.2s ease;
       }
-      p {
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+      .summary-banner {
         grid-column: 1/-1;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+      .summary-label {
+        font-size: 0.85rem;
+        color: #475569;
+        font-weight: 500;
+      }
+      .summary-val {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .summary-hint {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-left: auto;
+      }
+      .submit-row {
+        grid-column: 1/-1;
+        margin-top: 4px;
+      }
+      .btn-submit-return {
+        padding: 12px 26px;
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.22);
+        transition: all 0.2s ease;
+      }
+      .btn-submit-return:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(234, 88, 12, 0.32);
+      }
+      .btn-submit-return:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
       }
     `,
   ],

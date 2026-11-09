@@ -11,44 +11,7 @@ import { ReturnForm } from '../../../services/return-form';
   standalone: true,
   imports: [CommonModule, FormsModule, ReturnForm],
   templateUrl: './devoluciones.html',
-  styles: [
-    `
-      .card {
-        padding: 24px;
-        margin-bottom: 20px;
-        border: 1px solid #cbd5e1;
-        border-radius: 12px;
-      }
-      .policy {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 18px;
-      }
-      .policy label {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      input,
-      select {
-        padding: 8px;
-      }
-      td,
-      th {
-        padding: 12px;
-        text-align: left;
-      }
-      table {
-        width: 100%;
-      }
-      .error {
-        color: #b91c1c;
-      }
-      .success {
-        color: #047857;
-      }
-    `,
-  ],
+  styleUrls: ['./devoluciones.css']
 })
 export class Devoluciones implements OnInit {
   ventas: any[] = [];
