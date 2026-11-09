@@ -10,32 +10,7 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './saas.html',
-  styles: [
-    `
-      article,
-      form {
-        padding: 24px;
-        margin: 18px 0;
-        border: 1px solid #cbd5e1;
-        border-radius: 12px;
-      }
-      form {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-      }
-      label {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      input,
-      select,
-      button {
-        padding: 10px;
-      }
-    `,
-  ],
+  styleUrls: ['./saas.css'],
 })
 export class SaasComponent implements OnInit {
   empresas: any[] = [];

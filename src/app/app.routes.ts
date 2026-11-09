@@ -102,19 +102,19 @@ export const routes: Routes = [
         path: 'ventas',
         component: Ventas,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Cajero', 'Encargado'] },
+        data: { roles: ['Administrador', 'Cajero', 'Encargado', 'AdministradorPlataforma'] },
       },
       {
         path: 'reservas',
         component: Reservas,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Encargado'] },
+        data: { roles: ['Administrador', 'Encargado', 'AdministradorPlataforma'] },
       },
       {
         path: 'historial-ventas',
         component: HistorialVentas,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Encargado'] },
+        data: { roles: ['Administrador', 'Encargado', 'AdministradorPlataforma'] },
       },
       {
         path: 'reportes',
@@ -132,7 +132,7 @@ export const routes: Routes = [
         path: 'delivery',
         component: Delivery,
         canActivate: [roleGuard],
-        data: { roles: ['Administrador', 'Repartidor'] },
+        data: { roles: ['Administrador', 'Repartidor', 'AdministradorPlataforma'] },
       },
       {
         path: 'saas',

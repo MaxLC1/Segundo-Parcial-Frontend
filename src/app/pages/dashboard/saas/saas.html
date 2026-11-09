@@ -1,48 +1,195 @@
-<h2>{{ platform ? 'Administración de empresas' : 'Suscripción de mi empresa' }}</h2>
-<p role="alert">{{ error }}</p>
-<p role="status">{{ message }}</p>
-<form *ngIf="platform" (ngSubmit)="create()">
-  <h3>Nueva empresa</h3>
-  <label>Nombre<input name="nombre" [(ngModel)]="draft.nombre" required /></label
-  ><label>Código<input name="codigo" [(ngModel)]="draft.codigo" required /></label
-  ><label
-    >Plan<select name="plan" [(ngModel)]="draft.plan_id">
-      <option *ngFor="let p of planes" [ngValue]="p.id">{{ p.nombre }}</option>
-    </select></label
-  ><label
-    >Nombre del administrador<input name="admin" [(ngModel)]="draft.admin_nombre" required /></label
-  ><label
-    >Correo del administrador<input
-      name="email"
-      type="email"
-      [(ngModel)]="draft.admin_email"
-      required /></label
-  ><label
-    >Contraseña inicial<input
-      name="password"
-      type="password"
-      minlength="8"
-      maxlength="72"
-      [(ngModel)]="draft.admin_password"
-      required
-      autocomplete="new-password" /></label
-  ><button [disabled]="busy">Crear empresa y administrador</button>
-</form>
-<article *ngFor="let e of empresas">
-  <h3>{{ e.nombre }}</h3>
-  <p>{{ e.activa ? 'Empresa activa' : 'Empresa desactivada' }} · {{ e.codigo }}</p>
-  <p>
-    Plan: {{ e.limites?.plan_nombre }} · Sucursales: {{ e.limites?.sucursales_activas }} /
-    {{ e.limites?.max_sucursales }}
-  </p>
-  <p>
-    Vencimiento: {{ e.limites?.fecha_vencimiento | date: 'shortDate' }} ·
-    {{ e.limites?.suscripcion_activa ? 'Suscripción activa' : 'Suscripción inactiva' }}
-  </p>
-  <div *ngIf="platform">
-    <button (click)="toggle(e)">{{ e.activa ? 'Desactivar empresa' : 'Activar empresa' }}</button
-    ><select [(ngModel)]="e.planElegido">
-      <option *ngFor="let p of planes" [ngValue]="p.id">{{ p.nombre }}</option></select
-    ><button [disabled]="!e.planElegido" (click)="plan(e)">Asignar / renovar por un año</button>
+<div class="saas-container">
+  <!-- Encabezado de la página -->
+  <div class="page-header">
+    <div>
+      <h2 class="title">
+        {{ platform ? 'Administración de Empresas y Suscripciones SaaS' : 'Suscripción de mi Empresa' }}
+      </h2>
+      <p class="subtitle">
+        {{ platform ? 'Aprovisionamiento centralizado de inquilinos (Tenants), asignación de planes y límites multitenant' : 'Estado de contrato, sucursales disponibles y funcionalidades habilitadas' }}
+      </p>
+    </div>
   </div>
-</article>
+
+  <!-- Alertas de estado -->
+  <div *ngIf="error" class="alert-box error" role="alert">
+    <span>⚠️ {{ error }}</span>
+  </div>
+  <div *ngIf="message" class="alert-box success" role="status">
+    <span>✅ {{ message }}</span>
+  </div>
+
+  <!-- Formulario de Aprovisionamiento (Solo para Administrador de Plataforma) -->
+  <div *ngIf="platform" class="glass-card form-section">
+    <div class="card-title-box">
+      <div class="icon-circle">🏢</div>
+      <div>
+        <h3>Registrar Nueva Empresa Contratante</h3>
+        <p class="card-desc">Crea un nuevo tenant aislado junto a las credenciales de su primer administrador de tienda.</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="create()" class="create-tenant-form">
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Nombre de la Empresa</label>
+          <input
+            name="nombre"
+            [(ngModel)]="draft.nombre"
+            placeholder="Ej: Mango Bolivia SRL"
+            required
+            class="input-control"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Código de Tenant (Identificador)</label>
+          <input
+            name="codigo"
+            [(ngModel)]="draft.codigo"
+            placeholder="Ej: mango-bo"
+            required
+            class="input-control"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Plan Comercial Inicial</label>
+          <select name="plan" [(ngModel)]="draft.plan_id" class="input-control select-control">
+            <option *ngFor="let p of planes" [ngValue]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Nombre del Administrador</label>
+          <input
+            name="admin"
+            [(ngModel)]="draft.admin_nombre"
+            placeholder="Ej: Laura Méndez"
+            required
+            class="input-control"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Correo Electrónico (Login)</label>
+          <input
+            name="email"
+            type="email"
+            [(ngModel)]="draft.admin_email"
+            placeholder="admin@empresa.com"
+            required
+            class="input-control"
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña Inicial</label>
+          <input
+            name="password"
+            type="password"
+            minlength="8"
+            maxlength="72"
+            [(ngModel)]="draft.admin_password"
+            placeholder="Mínimo 8 caracteres"
+            required
+            autocomplete="new-password"
+            class="input-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-create" [disabled]="busy">
+          <span *ngIf="!busy">Crear Empresa y Administrador</span>
+          <span *ngIf="busy">Aprovisionando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Listado de Tenants / Empresas -->
+  <div class="companies-section">
+    <h3 class="section-heading">Empresas Registradas en la Plataforma (Tenants)</h3>
+
+    <div class="companies-grid">
+      <div *ngFor="let e of empresas" class="glass-card company-card" [class.inactive]="!e.activa">
+        <!-- Encabezado de la tarjeta -->
+        <div class="company-card-header">
+          <div>
+            <div class="badges-row">
+              <span class="badge-status" [class.active]="e.activa">
+                {{ e.activa ? '● Activa' : '○ Inactiva' }}
+              </span>
+              <span class="badge-plan" [class.pro]="e.limites?.plan_nombre === 'Profesional'">
+                Plan {{ e.limites?.plan_nombre || 'Básico' }}
+              </span>
+            </div>
+            <h4 class="company-name">{{ e.nombre }}</h4>
+            <span class="tenant-code">tenant: <code>{{ e.codigo }}</code></span>
+          </div>
+        </div>
+
+        <!-- Métricas de Suscripción -->
+        <div class="company-metrics">
+          <div class="metric-row">
+            <span class="metric-label">Capacidad de Sucursales:</span>
+            <span class="metric-value">
+              <strong>{{ e.limites?.sucursales_activas || 0 }}</strong> / {{ e.limites?.max_sucursales || 2 }} activas
+            </span>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div class="progress-track">
+            <div
+              class="progress-fill"
+              [style.width.%]="((e.limites?.sucursales_activas || 0) / (e.limites?.max_sucursales || 1)) * 100"
+            ></div>
+          </div>
+
+          <div class="metric-row date-row">
+            <span class="metric-label">Vencimiento del Plan:</span>
+            <span class="metric-value date-val">
+              📅 {{ e.limites?.fecha_vencimiento ? (e.limites?.fecha_vencimiento | date: 'mediumDate') : 'Indefinido' }}
+            </span>
+          </div>
+
+          <div class="metric-row status-contract">
+            <span class="metric-label">Estado de Suscripción:</span>
+            <span class="contract-tag" [class.valid]="e.limites?.suscripcion_activa">
+              {{ e.limites?.suscripcion_activa ? 'Suscripción Vigente' : 'Suscripción Caducada' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Acciones Administrativas del Superadmin -->
+        <div *ngIf="platform" class="company-actions">
+          <div class="action-toggle">
+            <button
+              class="btn-toggle"
+              [class.btn-deactivate]="e.activa"
+              [class.btn-activate]="!e.activa"
+              (click)="toggle(e)"
+            >
+              {{ e.activa ? 'Desactivar Empresa' : 'Activar Empresa' }}
+            </button>
+          </div>
+
+          <div class="action-plan">
+            <select [(ngModel)]="e.planElegido" class="select-plan">
+              <option [ngValue]="undefined" disabled selected>Cambiar plan...</option>
+              <option *ngFor="let p of planes" [ngValue]="p.id">{{ p.nombre }}</option>
+            </select>
+            <button
+              class="btn-renew"
+              [disabled]="!e.planElegido"
+              (click)="plan(e)"
+            >
+              Asignar / Renovar 1 Año
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
