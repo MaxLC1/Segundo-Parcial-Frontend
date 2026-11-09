@@ -1,24 +1,28 @@
 <div class="pos-layout">
   <div class="products-section glass-card">
     <h3>Punto de Venta (POS)</h3>
-    
+
     <div class="input-group">
       <label>Sucursal de Venta</label>
       <select class="input-field" [(ngModel)]="sucursalSeleccionada" [disabled]="cart.length > 0">
         <option [ngValue]="null" disabled selected>Selecciona sucursal...</option>
         <option *ngFor="let s of sucursales" [ngValue]="s.id">{{ s.nombre }}</option>
       </select>
-      <small class="text-muted" *ngIf="cart.length > 0">No puedes cambiar de sucursal mientras tengas items en el carrito.</small>
+      <small class="text-muted" *ngIf="cart.length > 0"
+        >No puedes cambiar de sucursal mientras tengas items en el carrito.</small
+      >
     </div>
 
-    <hr class="divider">
+    <hr class="divider" />
 
     <div class="selectors" *ngIf="sucursalSeleccionada">
       <div class="input-group">
         <label>Producto</label>
         <select class="input-field" [(ngModel)]="productoSeleccionado">
           <option [ngValue]="null" disabled>Buscar producto...</option>
-          <option *ngFor="let p of productos" [ngValue]="p.id">{{ p.nombre }} - Bs.{{ p.precio }}</option>
+          <option *ngFor="let p of productos" [ngValue]="p.id">
+            {{ p.nombre }} - Bs.{{ p.precio }}
+          </option>
         </select>
       </div>
 
@@ -39,25 +43,37 @@
         </div>
         <div class="input-group">
           <label>Cant.</label>
-          <input type="number" class="input-field" [(ngModel)]="cantidadSeleccionada" min="1">
+          <input type="number" class="input-field" [(ngModel)]="cantidadSeleccionada" min="1" />
         </div>
       </div>
 
-      <div class="stock-info" *ngIf="productoSeleccionado && tallaSeleccionada && colorSeleccionado">
-        <p>Stock disponible: <strong>{{ getStockDisponible() }}</strong></p>
-        <button class="btn-primary" (click)="addToCart()" [disabled]="getStockDisponible() < cantidadSeleccionada">Agregar al Carrito</button>
+      <div
+        class="stock-info"
+        *ngIf="productoSeleccionado && tallaSeleccionada && colorSeleccionado"
+      >
+        <p>
+          Stock disponible: <strong>{{ getStockDisponible() }}</strong>
+        </p>
+        <button
+          class="btn-primary"
+          (click)="addToCart()"
+          [disabled]="getStockDisponible() < cantidadSeleccionada"
+        >
+          Agregar al Carrito
+        </button>
       </div>
     </div>
   </div>
 
   <div class="cart-section glass-card">
     <h3>Carrito de Compras</h3>
-    
+    <p role="status" *ngIf="cart.length === 0 && mensajeOfflineVenta">{{ mensajeOfflineVenta }}</p>
+    <p role="status" *ngIf="cart.length === 0 && ventaExitosa && !mensajeOfflineVenta">Venta registrada exitosamente.</p>
+    <small>Sin conexión se usan las últimas existencias descargadas; la disponibilidad se confirma al sincronizar.</small>
+
     <div class="cart-items">
-      <div *ngIf="cart.length === 0" class="empty-cart">
-        El carrito está vacío.
-      </div>
-      
+      <div *ngIf="cart.length === 0" class="empty-cart">El carrito está vacío.</div>
+
       <div class="cart-item" *ngFor="let item of cart; let i = index">
         <div class="item-details">
           <h4>{{ getProductoNombre(item.producto_id) }}</h4>
@@ -75,9 +91,18 @@
         <span>Total:</span>
         <span class="total-amount">Bs. {{ getTotal() }}</span>
       </div>
-      
-      <div class="input-group" style="margin-top: 20px; margin-bottom: 20px;">
-        <label>Método de Pago</label>
+
+      <div class="input-group" style="margin-top: 20px; margin-bottom: 20px">
+        <label>Cliente (opcional)</label
+        ><select class="input-field" [(ngModel)]="clienteId">
+          <option [ngValue]="null">Venta sin cliente identificado</option>
+          <option *ngFor="let c of clientes" [ngValue]="c.id">
+            {{ c.nombre_completo }}
+          </option></select
+        ><label>Cupón (opcional)</label
+        ><input class="input-field" [(ngModel)]="cuponCodigo" placeholder="CUPON-…" /><label
+          >Método de Pago</label
+        >
         <select class="input-field" [(ngModel)]="metodoPago">
           <option value="Efectivo">Efectivo</option>
           <option value="QR">Pago con QR</option>
@@ -85,7 +110,7 @@
         </select>
       </div>
 
-      <div class="input-group" style="margin-bottom: 20px;">
+      <div class="input-group" style="margin-bottom: 20px">
         <label>Tipo de Entrega</label>
         <select class="input-field" [(ngModel)]="tipoEntrega">
           <option value="Recojo en Tienda">Recojo en Tienda (Directo)</option>
@@ -93,19 +118,41 @@
         </select>
       </div>
 
-      <div class="input-group" style="margin-bottom: 20px;" *ngIf="tipoEntrega === 'Delivery'">
+      <div class="input-group" style="margin-bottom: 20px" *ngIf="tipoEntrega === 'Delivery'">
         <label>Dirección de Envío</label>
-        <input type="text" class="input-field" [(ngModel)]="direccionEnvio" placeholder="Ej: Calle Los Pinos #123">
+        <input
+          type="text"
+          class="input-field"
+          [(ngModel)]="direccionEnvio"
+          placeholder="Ej: Calle Los Pinos #123"
+        />
       </div>
-      
+
       <div class="alert-success" *ngIf="ventaExitosa && !mensajeOfflineVenta">
         ¡Venta registrada exitosamente!
       </div>
-      <div class="alert-warning" *ngIf="mensajeOfflineVenta" style="background: #fef3c7; color: #b45309; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; border: 1px solid #fde68a; line-height: 1.4;">
+      <div
+        class="alert-warning"
+        *ngIf="mensajeOfflineVenta"
+        style="
+          background: #fef3c7;
+          color: #b45309;
+          padding: 10px;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          font-size: 0.85rem;
+          border: 1px solid #fde68a;
+          line-height: 1.4;
+        "
+      >
         {{ mensajeOfflineVenta }}
       </div>
-      
-      <button class="btn-primary w-full btn-checkout" (click)="procesarVenta()" [disabled]="isProcessing">
+
+      <button
+        class="btn-primary w-full btn-checkout"
+        (click)="procesarVenta()"
+        [disabled]="isProcessing"
+      >
         {{ isProcessing ? 'Procesando...' : 'Completar Venta' }}
       </button>
     </div>
@@ -114,33 +161,107 @@
 
 <!-- Modal para Pago con QR -->
 <div class="modal-overlay" *ngIf="showModalQR" (click)="cerrarModalQR()">
-  <div class="modal-content" (click)="$event.stopPropagation()" style="text-align: center; max-width: 400px; padding: 30px;">
-    
+  <div
+    class="modal-content"
+    (click)="$event.stopPropagation()"
+    style="text-align: center; max-width: 400px; padding: 30px"
+  >
     <ng-container *ngIf="!paymentSuccessQR">
       <h3>Pago con Código QR Simple</h3>
-      <p class="text-muted" style="margin-bottom: 16px;">Monto a cobrar: <strong>Bs. {{ getTotal() }}</strong></p>
-      
-      <div *ngIf="!qrUrl" style="padding: 40px; color: #888;">
+      <p class="text-muted" style="margin-bottom: 16px">
+        Monto a cobrar: <strong>Bs. {{ getTotal() }}</strong>
+      </p>
+
+      <div *ngIf="!qrUrl" style="padding: 40px; color: #888">
         <p>Generando código seguro...</p>
       </div>
 
-      <div *ngIf="qrUrl" style="width: 220px; height: 220px; background: white; padding: 15px; border-radius: 16px; margin: 0 auto 24px auto; border: 2px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-        <img [src]="qrUrl" alt="QR Code Bancario" style="width: 100%;">
+      <div
+        *ngIf="qrUrl"
+        style="
+          width: 220px;
+          height: 220px;
+          background: white;
+          padding: 15px;
+          border-radius: 16px;
+          margin: 0 auto 24px auto;
+          border: 2px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        "
+      >
+        <img [src]="qrUrl" alt="QR Code Bancario" style="width: 100%" />
       </div>
-      
-      <div *ngIf="qrUrl" class="polling-status" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; color: #0284c7; background: #e0f2fe; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem;">
-        <div class="spinner-dot" style="width: 8px; height: 8px; background: #0284c7; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+
+      <div
+        *ngIf="qrUrl"
+        class="polling-status"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 24px;
+          color: #0284c7;
+          background: #e0f2fe;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 0.9rem;
+        "
+      >
+        <div
+          class="spinner-dot"
+          style="
+            width: 8px;
+            height: 8px;
+            background: #0284c7;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+          "
+        ></div>
         Esperando confirmación del banco...
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; border-top: 1px solid #eee; padding-top: 20px;">
-        <button class="btn-secondary" style="width: 100%;" (click)="cerrarModalQR()">Cancelar Transacción</button>
-        
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+          border-top: 1px solid #eee;
+          padding-top: 20px;
+        "
+      >
+        <button class="btn-secondary" style="width: 100%" (click)="cerrarModalQR()">
+          Cancelar Transacción
+        </button>
+
         <!-- Botón secreto más presentable para defensa de proyecto -->
-        <button *ngIf="qrTxId" class="btn-verify" (click)="simularEscaneoCliente()" [disabled]="isVerifying">
-          <svg *ngIf="isVerifying" class="spinner-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle>
-            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75"></path>
+        <button
+          *ngIf="qrTxId"
+          class="btn-verify"
+          (click)="simularEscaneoCliente()"
+          [disabled]="isVerifying"
+        >
+          <svg
+            *ngIf="isVerifying"
+            class="spinner-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+              opacity="0.25"
+            ></circle>
+            <path
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              opacity="0.75"
+            ></path>
           </svg>
           <span>{{ isVerifying ? 'Verificando con el banco...' : 'Verificar Pago' }}</span>
         </button>
@@ -148,16 +269,15 @@
     </ng-container>
 
     <ng-container *ngIf="paymentSuccessQR">
-      <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
+      <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center">
         <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
           <circle class="success-checkmark-circle" cx="26" cy="26" r="25" fill="none" />
           <path class="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
         </svg>
-        <h3 style="color: #16a34a; margin: 0;">¡Pago Exitoso!</h3>
-        <p class="text-muted" style="margin-top: 8px;">Procesando tu recibo...</p>
+        <h3 style="color: #16a34a; margin: 0">¡Pago Exitoso!</h3>
+        <p class="text-muted" style="margin-top: 8px">Procesando tu recibo...</p>
       </div>
     </ng-container>
-
   </div>
 </div>
 
@@ -166,54 +286,86 @@
   <div class="modal-content stripe-modal" (click)="$event.stopPropagation()">
     <div class="stripe-modal-header">
       <div class="stripe-logo">
-        <span style="font-size: 1.6rem; font-weight: 800; color: #635bff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: -1px; line-height: 1;">
+        <span
+          style="
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #635bff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            letter-spacing: -1px;
+            line-height: 1;
+          "
+        >
           stripe
         </span>
       </div>
       <button class="stripe-close-btn" (click)="showModalStripe = false">×</button>
     </div>
-    
+
     <div class="stripe-modal-body">
       <ng-container *ngIf="!paymentSuccessStripe">
         <div class="stripe-amount-header">
-        <span class="stripe-amount-label">Monto a pagar</span>
-        <span class="stripe-amount-value">Bs. {{ getTotal() }}</span>
-      </div>
-      
-      <div class="stripe-form">
-        <div class="stripe-input-group">
-          <label>Información de la tarjeta</label>
-          <div class="stripe-card-container">
-            <input type="text" class="stripe-input stripe-card-number" placeholder="Número de tarjeta" [(ngModel)]="mockCardNumber" (ngModelChange)="formatCardNumber($event)" maxlength="19">
-            <div class="stripe-card-details">
-              <input type="text" class="stripe-input stripe-exp" placeholder="MM / AA" [(ngModel)]="mockCardExp" (ngModelChange)="formatCardExp($event)" maxlength="7">
-              <input type="text" class="stripe-input stripe-cvc" placeholder="CVC" [(ngModel)]="mockCardCvc" maxlength="3">
+          <span class="stripe-amount-label">Monto a pagar</span>
+          <span class="stripe-amount-value">Bs. {{ getTotal() }}</span>
+        </div>
+
+        <div class="stripe-form">
+          <div class="stripe-input-group">
+            <label>Información de la tarjeta</label>
+            <div class="stripe-card-container">
+              <input
+                type="text"
+                class="stripe-input stripe-card-number"
+                placeholder="Número de tarjeta"
+                [(ngModel)]="mockCardNumber"
+                (ngModelChange)="formatCardNumber($event)"
+                maxlength="19"
+              />
+              <div class="stripe-card-details">
+                <input
+                  type="text"
+                  class="stripe-input stripe-exp"
+                  placeholder="MM / AA"
+                  [(ngModel)]="mockCardExp"
+                  (ngModelChange)="formatCardExp($event)"
+                  maxlength="7"
+                />
+                <input
+                  type="text"
+                  class="stripe-input stripe-cvc"
+                  placeholder="CVC"
+                  [(ngModel)]="mockCardCvc"
+                  maxlength="3"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="stripe-security-badge">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zm6 10v8H6v-8h12zm-9-2V7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9z"/></svg>
-        <span>Transacción de prueba (Validación simulada)</span>
-      </div>
 
-      <button class="stripe-pay-btn" (click)="confirmarPagoStripe()" [disabled]="isProcessing">
-        {{ isProcessing ? 'Procesando...' : 'Pagar' }}
-      </button>
+        <div class="stripe-security-badge">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path
+              d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zm6 10v8H6v-8h12zm-9-2V7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9z"
+            />
+          </svg>
+          <span>Transacción de prueba (Validación simulada)</span>
+        </div>
+
+        <button class="stripe-pay-btn" (click)="confirmarPagoStripe()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Procesando...' : 'Pagar' }}
+        </button>
       </ng-container>
 
       <ng-container *ngIf="paymentSuccessStripe">
-        <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
+        <div style="padding: 40px 20px; display: flex; flex-direction: column; align-items: center">
           <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
             <circle class="success-checkmark-circle" cx="26" cy="26" r="25" fill="none" />
             <path class="success-checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
           </svg>
-          <h3 style="color: #16a34a; margin: 0;">¡Pago Exitoso!</h3>
-          <p class="text-muted" style="margin-top: 8px;">Procesando tu recibo...</p>
+          <h3 style="color: #16a34a; margin: 0">¡Pago Exitoso!</h3>
+          <p class="text-muted" style="margin-top: 8px">Procesando tu recibo...</p>
         </div>
       </ng-container>
     </div>
   </div>
 </div>
-

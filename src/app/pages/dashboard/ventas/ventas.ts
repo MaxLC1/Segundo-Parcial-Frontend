@@ -14,7 +14,7 @@ import { environment } from '../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './ventas.html',
-  styleUrls: ['./ventas.css']
+  styleUrls: ['./ventas.css'],
 })
 export class Ventas implements OnInit {
   productos: any[] = [];
@@ -22,25 +22,28 @@ export class Ventas implements OnInit {
   inventarios: any[] = [];
   tallas: any[] = [];
   colores: any[] = [];
-  
+
   cart: any[] = [];
   sucursalSeleccionada: number | null = null;
   productoSeleccionado: number | null = null;
   tallaSeleccionada: number | null = null;
   colorSeleccionado: number | null = null;
   cantidadSeleccionada: number = 1;
-  
+
   isProcessing = false;
   ventaExitosa = false;
   mensajeOfflineVenta: string | null = null;
-  
+
+  cuponCodigo = '';
+  clientes: any[] = [];
+  clienteId: number | null = null;
   metodoPago: string = 'Efectivo';
   tipoEntrega: string = 'Recojo en Tienda';
   direccionEnvio: string = '';
-  
+
   showModalQR: boolean = false;
   showModalStripe: boolean = false;
-  
+
   mockCardNumber: string = '';
   mockCardExp: string = '';
   mockCardCvc: string = '';
@@ -58,11 +61,21 @@ export class Ventas implements OnInit {
     private offlineSync: OfflineSyncService,
     private auth: Auth,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.loadData();
+    this.http.get<any[]>(environment.apiUrl + '/ventas/clientes').subscribe({
+      next: (rows) => {
+        this.clientes = rows;
+        this.offlineStorage
+          .obtenerReferencias()
+          .then((refs) => this.offlineStorage.guardarReferencias({ ...refs, clientes: rows }));
+        this.cdr.detectChanges();
+      },
+      error: () => {},
+    });
   }
 
   formatCardNumber(val: string) {
@@ -92,6 +105,7 @@ export class Ventas implements OnInit {
       if (prodsOffline.length > 0) {
         this.productos = prodsOffline;
       }
+      await this.restoreChoices();
       this.cdr.detectChanges();
       return;
     }
@@ -102,17 +116,21 @@ export class Ventas implements OnInit {
       tallas: this.http.get<any[]>(`${apiUrl}/catalogo/tallas`),
       colores: this.http.get<any[]>(`${apiUrl}/catalogo/colores`),
       sucursales: this.http.get<any[]>(`${apiUrl}/sucursales/sucursales?empresa_id=${empresaId}`),
-      inventarios: this.http.get<any[]>(`${apiUrl}/sucursales/inventarios?empresa_id=${empresaId}`)
+      inventarios: this.http.get<any[]>(`${apiUrl}/sucursales/inventarios?empresa_id=${empresaId}`),
     }).subscribe({
-      next: (res) => {
+      next: async (res) => {
         this.productos = res.productos;
         this.tallas = res.tallas;
         this.colores = res.colores;
         this.sucursales = res.sucursales;
         this.inventarios = res.inventarios;
-        
+
         // Guardar copia local en IndexedDB para disponibilidad offline
         this.offlineStorage.guardarCatalogoOffline(res.productos);
+        this.offlineStorage.guardarReferencias({
+          ...(await this.offlineStorage.obtenerReferencias()),
+          ...res,
+        });
 
         if (this.sucursales.length > 0 && !this.sucursalSeleccionada) {
           this.sucursalSeleccionada = this.sucursales[0].id;
@@ -126,41 +144,71 @@ export class Ventas implements OnInit {
         if (prodsOffline.length > 0) {
           this.productos = prodsOffline;
         }
+        await this.restoreChoices();
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  getProductoNombre(id: number): string { return this.productos.find(p => p.id === id)?.nombre || ''; }
-  getProductoPrecio(id: number): number { return this.productos.find(p => p.id === id)?.precio || 0; }
-  getTalla(id: number): string { return this.tallas.find(t => t.id === id)?.nombre || ''; }
-  getColor(id: number): string { return this.colores.find(c => c.id === id)?.nombre || ''; }
+  async restoreChoices() {
+    const refs = await this.offlineStorage.obtenerReferencias();
+    this.clientes = refs.clientes || [];
+    this.tallas = refs.tallas || [];
+    this.colores = refs.colores || [];
+    this.sucursales = refs.sucursales || [];
+    this.inventarios = refs.inventarios || [];
+    if (this.sucursales.length) this.sucursalSeleccionada = this.sucursales[0].id;
+  }
+  getProductoNombre(id: number): string {
+    return this.productos.find((p) => p.id === id)?.nombre || '';
+  }
+  getProductoPrecio(id: number): number {
+    return this.productos.find((p) => p.id === id)?.precio || 0;
+  }
+  getTalla(id: number): string {
+    return this.tallas.find((t) => t.id === id)?.nombre || '';
+  }
+  getColor(id: number): string {
+    return this.colores.find((c) => c.id === id)?.nombre || '';
+  }
 
   getStockDisponible(): number {
-    if (!this.sucursalSeleccionada || !this.productoSeleccionado || !this.tallaSeleccionada || !this.colorSeleccionado) return 0;
-    
-    const inv = this.inventarios.find(i => 
-      i.sucursal_id === this.sucursalSeleccionada &&
-      i.producto_id === this.productoSeleccionado &&
-      i.talla_id === this.tallaSeleccionada &&
-      i.color_id === this.colorSeleccionado
+    if (
+      !this.sucursalSeleccionada ||
+      !this.productoSeleccionado ||
+      !this.tallaSeleccionada ||
+      !this.colorSeleccionado
+    )
+      return 0;
+
+    const inv = this.inventarios.find(
+      (i) =>
+        i.sucursal_id === this.sucursalSeleccionada &&
+        i.producto_id === this.productoSeleccionado &&
+        i.talla_id === this.tallaSeleccionada &&
+        i.color_id === this.colorSeleccionado,
     );
     // En modo offline si no hay inventario cargado, permitimos operar con stock local conocido
-    return inv ? inv.cantidad : (navigator.onLine ? 0 : 99);
+    return inv ? inv.cantidad : 0;
   }
 
   addToCart() {
     if (!this.productoSeleccionado || !this.tallaSeleccionada || !this.colorSeleccionado) return;
-    
+
     const stock = this.getStockDisponible();
-    if (this.cantidadSeleccionada > stock && navigator.onLine) {
-      alert("No hay suficiente stock en esta sucursal");
+    if (this.cantidadSeleccionada <= 0 || this.cantidadSeleccionada > stock) {
+      alert('No hay suficiente stock en esta sucursal');
       return;
     }
 
     const precio = this.getProductoPrecio(this.productoSeleccionado);
-    const idx = this.cart.findIndex(i => i.producto_id === this.productoSeleccionado && i.talla_id === this.tallaSeleccionada && i.color_id === this.colorSeleccionado);
-    
+    const idx = this.cart.findIndex(
+      (i) =>
+        i.producto_id === this.productoSeleccionado &&
+        i.talla_id === this.tallaSeleccionada &&
+        i.color_id === this.colorSeleccionado,
+    );
+
     if (idx >= 0) {
       this.cart[idx].cantidad += this.cantidadSeleccionada;
       this.cart[idx].subtotal = this.cart[idx].cantidad * precio;
@@ -172,10 +220,10 @@ export class Ventas implements OnInit {
         color_id: this.colorSeleccionado,
         cantidad: this.cantidadSeleccionada,
         precio_unitario: precio,
-        subtotal: precio * this.cantidadSeleccionada
+        subtotal: precio * this.cantidadSeleccionada,
       });
     }
-    
+
     this.productoSeleccionado = null;
     this.tallaSeleccionada = null;
     this.colorSeleccionado = null;
@@ -194,9 +242,12 @@ export class Ventas implements OnInit {
 
   procesarVenta() {
     if (this.cart.length === 0 || !this.sucursalSeleccionada) return;
-    
-    if (this.tipoEntrega === 'Delivery' && (!this.direccionEnvio || this.direccionEnvio.trim() === '')) {
-      alert("Por favor ingrese la dirección de envío para el Delivery.");
+
+    if (
+      this.tipoEntrega === 'Delivery' &&
+      (!this.direccionEnvio || this.direccionEnvio.trim() === '')
+    ) {
+      alert('Por favor ingrese la dirección de envío para el Delivery.');
       return;
     }
 
@@ -214,25 +265,29 @@ export class Ventas implements OnInit {
       this.cdr.detectChanges();
       return;
     }
-    
+
     // Pago en Efectivo directo
     this.enviarVentaBackend('Efectivo', null);
   }
 
   async registrarVentaOfflineLocal() {
+    if (this.metodoPago !== 'Efectivo' || this.cuponCodigo) {
+      alert('Sin conexión solo se registra efectivo y el cupón debe validarse en línea.');
+      return;
+    }
     this.isProcessing = true;
     this.cdr.detectChanges();
 
     try {
-      const sucursalObj = this.sucursales.find(s => s.id === this.sucursalSeleccionada);
+      const sucursalObj = this.sucursales.find((s) => s.id === this.sucursalSeleccionada);
       const uuid = await this.offlineStorage.registrarVentaOffline({
         sucursal_id: this.sucursalSeleccionada!,
         sucursal_nombre: sucursalObj?.nombre || `Sucursal #${this.sucursalSeleccionada}`,
-        usuario_id: this.auth.getUserId(),
+        usuario_id: this.clienteId || this.auth.getUserId(),
         empresa_id: this.auth.getEmpresaId(),
         metodo_pago: 'Efectivo',
         total: this.getTotal(),
-        detalles: this.cart
+        detalles: this.cart,
       });
 
       await this.offlineSync.actualizarContadorPendientes();
@@ -259,38 +314,38 @@ export class Ventas implements OnInit {
   confirmarPagoQR() {
     this.isProcessing = true;
     this.cdr.detectChanges();
-    
+
     const payload = { amount: this.getTotal() };
     this.http.post<any>(`${environment.apiUrl}/ventas/generar-qr`, payload).subscribe({
-      next: (res) => {
+      next: async (res) => {
         this.qrUrl = res.qr_url;
         this.qrTxId = res.tx_id;
         this.showModalQR = true;
         this.paymentSuccessQR = false;
         this.isProcessing = false;
         this.cdr.detectChanges();
-        
+
         this.pollingInterval = setInterval(() => {
           this.checkQRPaymentStatus();
         }, 2000);
       },
       error: (err) => {
-        alert("Error al generar QR: " + (err.error?.detail || err.message));
+        alert('Error al generar QR: ' + (err.error?.detail || err.message));
         this.isProcessing = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   checkQRPaymentStatus() {
     if (!this.qrTxId) return;
     this.http.get<any>(`${environment.apiUrl}/ventas/estado-pago-qr/${this.qrTxId}`).subscribe({
-      next: (res) => {
+      next: async (res) => {
         if (res.status === 'COMPLETED') {
           clearInterval(this.pollingInterval);
           this.paymentSuccessQR = true;
           this.cdr.detectChanges();
-          
+
           setTimeout(() => {
             this.enviarVentaBackend('QR', this.qrTxId);
             this.showModalQR = false;
@@ -300,7 +355,7 @@ export class Ventas implements OnInit {
             this.isVerifying = false;
           }, 2000);
         }
-      }
+      },
     });
   }
 
@@ -308,7 +363,9 @@ export class Ventas implements OnInit {
     if (!this.qrTxId) return;
     this.isVerifying = true;
     this.cdr.detectChanges();
-    this.http.post<any>(`${environment.apiUrl}/ventas/simular-pago-cliente/${this.qrTxId}`, {}).subscribe();
+    this.http
+      .post<any>(`${environment.apiUrl}/ventas/simular-pago-cliente/${this.qrTxId}`, {})
+      .subscribe();
   }
 
   cerrarModalQR() {
@@ -320,20 +377,20 @@ export class Ventas implements OnInit {
 
   confirmarPagoStripe() {
     if (!this.mockCardNumber || !this.mockCardExp || !this.mockCardCvc) {
-      alert("Por favor ingrese los datos de la tarjeta.");
+      alert('Por favor ingrese los datos de la tarjeta.');
       return;
     }
-    
+
     this.isProcessing = true;
     this.cdr.detectChanges();
     const payload = { amount: this.getTotal(), currency: 'bob' };
-    
+
     this.http.post<any>(`${environment.apiUrl}/ventas/create-payment-intent`, payload).subscribe({
-      next: (res) => {
+      next: async (res) => {
         const txId = res.client_secret;
         this.paymentSuccessStripe = true;
         this.cdr.detectChanges();
-        
+
         setTimeout(() => {
           this.enviarVentaBackend('Stripe', txId);
           this.showModalStripe = false;
@@ -341,28 +398,29 @@ export class Ventas implements OnInit {
         }, 2000);
       },
       error: (err) => {
-        alert("Error en la pasarela de pago: " + (err.error?.detail || err.message));
+        alert('Error en la pasarela de pago: ' + (err.error?.detail || err.message));
         this.isProcessing = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   private enviarVentaBackend(metodo: string, transaccion_id: string | null) {
     this.isProcessing = true;
     this.cdr.detectChanges();
-    
+
     const payload = {
       sucursal_id: this.sucursalSeleccionada,
-      usuario_id: this.auth.getUserId(),
+      usuario_id: this.clienteId || this.auth.getUserId(),
       empresa_id: this.auth.getEmpresaId(),
+      cupon_codigo: this.cuponCodigo || null,
       metodo_pago: metodo,
       transaccion_id: transaccion_id,
       tipo_entrega: this.tipoEntrega,
       direccion_envio: this.direccionEnvio,
-      detalles: this.cart
+      detalles: this.cart,
     };
-    
+
     this.ventasService.crearVenta(payload).subscribe({
       next: (res: any) => {
         this.isProcessing = false;
@@ -373,16 +431,20 @@ export class Ventas implements OnInit {
         this.mockCardCvc = '';
         this.loadData();
         this.cdr.detectChanges();
-        
+
         setTimeout(() => {
           this.ventaExitosa = false;
           this.cdr.detectChanges();
         }, 3000);
       },
       error: (err: any) => {
-        console.warn('Fallo en el servidor central al procesar la venta. Guardando offline como fallback...');
-        this.registrarVentaOfflineLocal();
-      }
+        this.isProcessing = false;
+        alert(
+          err.error?.detail ||
+            'No se pudo confirmar la venta. Compruebe su historial antes de reintentar.',
+        );
+        this.cdr.detectChanges();
+      },
     });
   }
 }

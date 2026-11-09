@@ -8,72 +8,417 @@
         <span class="tenant-tag">{{ empresaNombre }}</span>
       </div>
     </div>
-    
+
     <nav class="nav-links">
       <!-- SaaS y Multitenant (Desafío VI) -->
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/saas" routerLinkActive="active" class="highlight-link">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span> SaaS / Suscripción
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/saas"
+        routerLinkActive="active"
+        class="highlight-link"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+            <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+            <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+            <path d="M10 6h4" />
+            <path d="M10 10h4" />
+            <path d="M10 14h4" />
+            <path d="M10 18h4" /></svg
+        ></span>
+        SaaS / Suscripción
       </a>
 
       <!-- Productos y Categorías -->
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/productos" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg></span> Productos
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/productos"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"
+            /></svg
+        ></span>
+        Productos
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/categorias" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Categorías
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/categorias"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
+            />
+            <line x1="7" y1="7" x2="7.01" y2="7" /></svg
+        ></span>
+        Categorías
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/colecciones" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Colecciones
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/colecciones"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            /></svg
+        ></span>
+        Colecciones
       </a>
-      
+
       <!-- Proveedores -->
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/proveedores" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Proveedores
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/proveedores"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg
+        ></span>
+        Proveedores
       </a>
-      <a *ngIf="userRole === 'Proveedor'" routerLink="/dashboard/mis-productos" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Mis Productos
+      <a
+        *ngIf="userRole === 'Proveedor'"
+        routerLink="/dashboard/mis-productos"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="16.5" y1="9.4" x2="7.5" y2="4.21" />
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+            <line x1="12" y1="22.08" x2="12" y2="12" /></svg
+        ></span>
+        Mis Productos
       </a>
-      
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/variantes" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span> Tallas y Colores
+
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/variantes"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="13.5" cy="6.5" r=".5" />
+            <circle cx="17.5" cy="10.5" r=".5" />
+            <circle cx="8.5" cy="7.5" r=".5" />
+            <circle cx="6.5" cy="12.5" r=".5" />
+            <path
+              d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
+            /></svg
+        ></span>
+        Tallas y Colores
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'Proveedor' || userRole === 'Cajero'" routerLink="/dashboard/inventario" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Inventario
+      <a
+        *ngIf="
+          userRole === 'Administrador' ||
+          userRole === 'Encargado' ||
+          userRole === 'Proveedor' ||
+          userRole === 'Cajero' ||
+          userRole === 'AdministradorPlataforma'
+        "
+        routerLink="/dashboard/inventario"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" /></svg
+        ></span>
+        Inventario
       </a>
-      
+
       <!-- Ventas y POS -->
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'Cajero'" routerLink="/dashboard/ventas" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> POS / Crear Venta
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'Cajero' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/ventas"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+            <line x1="1" y1="10" x2="23" y2="10" /></svg
+        ></span>
+        POS / Crear Venta
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/reservas" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Gestión Reservas
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/reservas"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" /></svg
+        ></span>
+        Gestión Reservas
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Encargado'" routerLink="/dashboard/historial-ventas" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Historial Ventas
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Encargado' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/historial-ventas"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" /></svg
+        ></span>
+        Historial Ventas
       </a>
 
       <!-- Reportes Generativos con IA y Analítica ML (Desafío V) -->
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/reportes" routerLinkActive="active" class="highlight-link">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 3.37 2.08 6.26 5 7.46V20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2.54c2.92-1.2 5-4.09 5-7.46a8 8 0 0 0-8-8z"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg></span> IA & Reportes
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/reportes"
+        routerLinkActive="active"
+        class="highlight-link"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M12 2a8 8 0 0 0-8 8c0 3.37 2.08 6.26 5 7.46V20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2.54c2.92-1.2 5-4.09 5-7.46a8 8 0 0 0-8-8z"
+            />
+            <line x1="9" y1="10" x2="9.01" y2="10" />
+            <line x1="15" y1="10" x2="15.01" y2="10" />
+            <path d="M9.5 15a3.5 3.5 0 0 0 5 0" /></svg
+        ></span>
+        IA & Reportes
       </a>
-      
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/sucursales" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Sucursales
+
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/sucursales"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" /></svg
+        ></span>
+        Sucursales
       </a>
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/usuarios" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Usuarios
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/usuarios"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg
+        ></span>
+        Usuarios
       </a>
-      
+
+      <!-- Bitácora del Sistema y Auditoría -->
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/bitacora"
+        routerLinkActive="active"
+        class="highlight-link"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" /></svg
+        ></span>
+        Bitácora / Auditoría
+      </a>
+
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/comercial"
+        routerLinkActive="active"
+        >Cupones y traspasos</a
+      >
+      <a *ngIf="userRole === 'Cliente'" routerLink="/dashboard/cliente" routerLinkActive="active"
+        >Mis compras y beneficios</a
+      >
       <!-- Devoluciones y Delivery -->
-      <a *ngIf="userRole === 'Administrador'" routerLink="/dashboard/devoluciones" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span> Devoluciones / Cambios
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/devoluciones"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg
+        ></span>
+        Devoluciones / Cambios
       </a>
-      <a *ngIf="userRole === 'Administrador' || userRole === 'Repartidor'" routerLink="/dashboard/delivery" routerLinkActive="active">
-        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span> Recojos / Delivery
+      <a
+        *ngIf="userRole === 'Administrador' || userRole === 'Repartidor' || userRole === 'AdministradorPlataforma'"
+        routerLink="/dashboard/delivery"
+        routerLinkActive="active"
+      >
+        <span class="nav-icon"
+          ><svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="1" y="3" width="15" height="13" />
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+            <circle cx="5.5" cy="18.5" r="2.5" />
+            <circle cx="18.5" cy="18.5" r="2.5" /></svg
+        ></span>
+        Recojos / Delivery
       </a>
-      
+
       <!-- Cliente -->
-      <a *ngIf="userRole === 'Cliente'" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" style="background-color: var(--primary); color: white; margin-bottom: 10px; border-radius: 6px; text-align: center;">
+      <a
+        *ngIf="userRole === 'Cliente'"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        style="
+          background-color: var(--primary);
+          color: white;
+          margin-bottom: 10px;
+          border-radius: 6px;
+          text-align: center;
+        "
+      >
         Ir a la Tienda Virtual
       </a>
       <a *ngIf="userRole === 'Cliente'" routerLink="/dashboard/perfil" routerLinkActive="active">
@@ -88,15 +433,20 @@
   <!-- Contenido principal -->
   <main class="main-content">
     <header class="topbar">
-      <div class="topbar-left">
+      <div class="topbar-left" style="display: flex; align-items: center; gap: 1.25rem;">
         <h2>Panel de Control</h2>
-        
-        <!-- Switcher de Tenant para la Defensa / Docente -->
-        <div class="tenant-switcher-badge">
-          <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
-          <select [ngModel]="empresaId" (ngModelChange)="cambiarTenant($event)" title="Cambiar Empresa / Tenant activo">
-            <option [value]="1">Zara Bolivia S.A. (Plan Pro)</option>
-            <option [value]="2">Urban Style SRL (Plan Básico)</option>
+        <!-- Selector de Empresa (Tenant Switcher para Superadmin) -->
+        <div
+          *ngIf="userRole === 'AdministradorPlataforma' && empresasDisponibles && empresasDisponibles.length > 0"
+          style="display: flex; align-items: center; gap: 0.5rem; background: #e0e7ff; padding: 4px 10px; border-radius: 8px;"
+        >
+          <span style="font-size: 0.8rem; font-weight: 600; color: #3730a3;">Auditar Empresa:</span>
+          <select
+            [ngModel]="empresaId"
+            (ngModelChange)="cambiarTenant($event)"
+            style="padding: 4px 8px; border-radius: 6px; border: 1px solid #c7d2fe; font-size: 0.85rem; background: white; font-weight: 500;"
+          >
+            <option *ngFor="let emp of empresasDisponibles" [value]="emp.id">{{ emp.nombre }}</option>
           </select>
         </div>
       </div>
@@ -104,28 +454,50 @@
       <!-- Controles de Estado de Red, Offline y PWA Sync (Desafío II) -->
       <div class="topbar-right">
         <!-- Indicador de Red Online / Offline -->
-        <div class="network-badge" [class.online]="isOnline" [class.offline]="!isOnline" [title]="isOnline ? 'Conexión a Internet activa' : 'Operando sin conexión. Las transacciones se guardan en IndexedDB local.'">
+        <div
+          class="network-badge"
+          [class.online]="isOnline"
+          [class.offline]="!isOnline"
+          [title]="
+            isOnline
+              ? 'Conexión a Internet activa'
+              : 'Operando sin conexión. Las transacciones se guardan en IndexedDB local.'
+          "
+        >
           <span class="dot"></span>
           <span>{{ isOnline ? 'Online' : 'Modo Offline' }}</span>
         </div>
 
         <!-- Alerta de Información posiblemente desactualizada (Sección 5.3) -->
-        <div *ngIf="!isOnline" class="stale-data-badge" title="La aplicación está operando con datos locales cacheados que podrían estar desactualizados.">
+        <div
+          *ngIf="!isOnline"
+          class="stale-data-badge"
+          title="La aplicación está operando con datos locales cacheados que podrían estar desactualizados."
+        >
           Datos locales (Offline)
         </div>
 
         <!-- Botón de Operaciones Pendientes y Sincronización -->
         <div class="sync-actions">
-          <button class="btn-sync-queue" (click)="abrirModalOperaciones()" [title]="'Ver cola de ' + pendientesCount + ' operaciones offline'">
+          <button
+            class="btn-sync-queue"
+            (click)="abrirModalOperaciones()"
+            [title]="'Ver cola de ' + pendientesCount + ' operaciones offline'"
+          >
             <span>Cola Offline</span>
             <span *ngIf="pendientesCount > 0" class="badge-count">{{ pendientesCount }}</span>
           </button>
 
-          <button 
-            class="btn-sync-now" 
-            (click)="sincronizarAhora()" 
+          <button
+            class="btn-sync-now"
+            (click)="sincronizarAhora()"
             [disabled]="!isOnline || isSyncing"
-            [title]="isOnline ? 'Enviar operaciones pendientes al servidor central' : 'Requiere conexión a Internet'">
+            [title]="
+              isOnline
+                ? 'Enviar operaciones pendientes al servidor central'
+                : 'Requiere conexión a Internet'
+            "
+          >
             <span *ngIf="!isSyncing">Sincronizar</span>
             <span *ngIf="isSyncing">Sincronizando...</span>
           </button>
@@ -143,7 +515,11 @@
     </header>
 
     <!-- Banner Toast de Sincronización -->
-    <div *ngIf="mensajeSyncToast" class="sync-toast-banner" [class.alert]="mensajeSyncToast.includes('conflicto') || mensajeSyncToast.includes('Error')">
+    <div
+      *ngIf="mensajeSyncToast"
+      class="sync-toast-banner"
+      [class.alert]="mensajeSyncToast.includes('conflicto') || mensajeSyncToast.includes('Error')"
+    >
       <span>{{ mensajeSyncToast }}</span>
       <button class="close-toast" (click)="mensajeSyncToast = null">&times;</button>
     </div>
@@ -163,7 +539,9 @@
     <div class="modal-header">
       <div>
         <h3>Cola de Operaciones Offline (IndexedDB)</h3>
-        <p class="modal-subtitle">Registro local de ventas y reservas generadas sin conexión con identificadores UUID únicos</p>
+        <p class="modal-subtitle">
+          Registro local de ventas y reservas generadas sin conexión con identificadores UUID únicos
+        </p>
       </div>
       <button class="btn-close-modal" (click)="cerrarModalOperaciones()">&times;</button>
     </div>
@@ -205,24 +583,35 @@
           </thead>
           <tbody>
             <tr *ngFor="let v of ventasOffline">
-              <td><code class="uuid-code">{{ v.operacion_uuid }}</code></td>
-              <td>{{ v.fecha | date:'short' }}</td>
-              <td><strong>BOB {{ v.total | number:'1.2-2' }}</strong></td>
+              <td>
+                <code class="uuid-code">{{ v.operacion_uuid }}</code>
+              </td>
+              <td>{{ v.fecha | date: 'short' }}</td>
+              <td>
+                <strong>BOB {{ v.total | number: '1.2-2' }}</strong>
+              </td>
               <td>{{ v.metodo_pago }}</td>
               <td>
-                <span class="status-badge" [ngClass]="{
-                  'registrada': v.estado === 'REGISTRADA_LOCAL',
-                  'enviada': v.estado === 'ENVIADA',
-                  'confirmada': v.estado === 'CONFIRMADA',
-                  'conflicto': v.estado === 'RECHAZADA_CONFLICTO'
-                }">
+                <span
+                  class="status-badge"
+                  [ngClass]="{
+                    registrada: v.estado === 'REGISTRADA_LOCAL',
+                    enviada: v.estado === 'ENVIADA',
+                    confirmada: v.estado === 'CONFIRMADA',
+                    conflicto: v.estado === 'RECHAZADA_CONFLICTO',
+                  }"
+                >
                   {{ v.estado }}
                 </span>
               </td>
               <td>
                 <small *ngIf="v.motivo_rechazo" class="error-text">{{ v.motivo_rechazo }}</small>
-                <small *ngIf="!v.motivo_rechazo && v.estado === 'CONFIRMADA'" class="success-text">Confirmada en Servidor Central</small>
-                <small *ngIf="v.estado === 'REGISTRADA_LOCAL'" class="pending-text">Pendiente de conexión a Internet</small>
+                <small *ngIf="!v.motivo_rechazo && v.estado === 'CONFIRMADA'" class="success-text"
+                  >Confirmada en Servidor Central</small
+                >
+                <small *ngIf="v.estado === 'REGISTRADA_LOCAL'" class="pending-text"
+                  >Pendiente de conexión a Internet</small
+                >
               </td>
             </tr>
           </tbody>
@@ -230,7 +619,9 @@
       </div>
 
       <!-- Tabla de Reservas Offline -->
-      <h4 class="section-label" style="margin-top: 1.5rem;">Reservas de Prendas Registradas Localmente</h4>
+      <h4 class="section-label" style="margin-top: 1.5rem">
+        Reservas de Prendas Registradas Localmente
+      </h4>
       <div *ngIf="reservasOffline.length === 0" class="empty-msg">
         No hay reservas locales almacenadas en IndexedDB.
       </div>
@@ -248,21 +639,28 @@
           </thead>
           <tbody>
             <tr *ngFor="let r of reservasOffline">
-              <td><code class="uuid-code">{{ r.operacion_uuid }}</code></td>
-              <td>{{ r.fecha | date:'short' }}</td>
+              <td>
+                <code class="uuid-code">{{ r.operacion_uuid }}</code>
+              </td>
+              <td>{{ r.fecha | date: 'short' }}</td>
               <td>{{ r.detalles.length }} ítems</td>
               <td>
-                <span class="status-badge" [ngClass]="{
-                  'registrada': r.estado === 'REGISTRADA_LOCAL',
-                  'confirmada': r.estado === 'CONFIRMADA',
-                  'conflicto': r.estado === 'RECHAZADA_CONFLICTO'
-                }">
+                <span
+                  class="status-badge"
+                  [ngClass]="{
+                    registrada: r.estado === 'REGISTRADA_LOCAL',
+                    confirmada: r.estado === 'CONFIRMADA',
+                    conflicto: r.estado === 'RECHAZADA_CONFLICTO',
+                  }"
+                >
                   {{ r.estado }}
                 </span>
               </td>
               <td>
                 <small *ngIf="r.motivo_rechazo" class="error-text">{{ r.motivo_rechazo }}</small>
-                <small *ngIf="r.estado === 'CONFIRMADA'" class="success-text">Confirmada en Sucursal</small>
+                <small *ngIf="r.estado === 'CONFIRMADA'" class="success-text"
+                  >Confirmada en Sucursal</small
+                >
               </td>
             </tr>
           </tbody>
@@ -272,8 +670,16 @@
 
     <div class="modal-footer">
       <button class="btn-secondary" (click)="cerrarModalOperaciones()">Cerrar</button>
-      <button class="btn-primary" [disabled]="!isOnline || isSyncing || pendientesCount === 0" (click)="sincronizarAhora()">
-        {{ isSyncing ? 'Sincronizando...' : 'Sincronizar Operaciones Pendientes (' + pendientesCount + ')' }}
+      <button
+        class="btn-primary"
+        [disabled]="!isOnline || isSyncing || pendientesCount === 0"
+        (click)="sincronizarAhora()"
+      >
+        {{
+          isSyncing
+            ? 'Sincronizando...'
+            : 'Sincronizar Operaciones Pendientes (' + pendientesCount + ')'
+        }}
       </button>
     </div>
   </div>

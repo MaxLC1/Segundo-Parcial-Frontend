@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
-
 :root {
   /* Vibrant Light Mode & Glassmorphism Palette (Naranja Premium) */
   --bg-color: #f8fafc; /* Fondo claro vibrante */
@@ -25,8 +23,9 @@
 body {
   font-family: 'Outfit', sans-serif;
   background: var(--bg-color);
-  background-image: radial-gradient(circle at 10% 20%, rgba(249, 115, 22, 0.08), transparent 30%),
-                    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.08), transparent 30%);
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(249, 115, 22, 0.08), transparent 30%),
+    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.08), transparent 30%);
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
@@ -169,8 +168,14 @@ body {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -194,7 +199,9 @@ body {
   cursor: pointer;
   transition: color 0.2s;
 }
-.btn-close:hover { color: var(--error); }
+.btn-close:hover {
+  color: var(--error);
+}
 
 .modal-body {
   padding: 24px;
@@ -220,7 +227,7 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .btn-secondary {
@@ -254,6 +261,12 @@ body {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

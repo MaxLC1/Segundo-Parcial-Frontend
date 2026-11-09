@@ -5,19 +5,21 @@ import { environment } from '../../environments/environment';
 import { OfflineStorageService, VentaOffline, ReservaOffline } from './offline-storage.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OfflineSyncService {
   private apiUrl = environment.apiUrl;
 
-  public isOnline$ = new BehaviorSubject<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  public isOnline$ = new BehaviorSubject<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
   public pendientesCount$ = new BehaviorSubject<number>(0);
   public sincronizando$ = new BehaviorSubject<boolean>(false);
   public ultimoResultadoSincronizacion$ = new BehaviorSubject<any>(null);
 
   constructor(
     private http: HttpClient,
-    private storage: OfflineStorageService
+    private storage: OfflineStorageService,
   ) {
     this.initNetworkListeners();
     this.actualizarContadorPendientes();
@@ -26,7 +28,9 @@ export class OfflineSyncService {
   private initNetworkListeners() {
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => {
-        console.log('[OfflineSync] Conexión a Internet restablecida. Iniciando sincronización automática...');
+        console.log(
+          '[OfflineSync] Conexión a Internet restablecida. Iniciando sincronización automática...',
+        );
         this.isOnline$.next(true);
         this.sincronizarTodo();
       });
@@ -66,7 +70,9 @@ export class OfflineSyncService {
         return { exito: true, mensaje: 'No hay operaciones pendientes de sincronizar.' };
       }
 
-      console.log(`[OfflineSync] Sincronizando ${ventas.length} ventas y ${reservas.length} reservas...`);
+      console.log(
+        `[OfflineSync] Sincronizando ${ventas.length} ventas y ${reservas.length} reservas...`,
+      );
 
       let ventasConfirmadas = 0;
       let ventasRechazadas = 0;
@@ -75,7 +81,7 @@ export class OfflineSyncService {
       // 1. Sincronizar Ventas
       if (ventas.length > 0) {
         const payloadVentas = {
-          ventas: ventas.map(v => ({
+          ventas: ventas.map((v) => ({
             sucursal_id: v.sucursal_id,
             usuario_id: v.usuario_id,
             empresa_id: v.empresa_id,
@@ -83,18 +89,18 @@ export class OfflineSyncService {
             operacion_uuid: v.operacion_uuid,
             origen: 'PWA_OFFLINE',
             fecha: v.fecha,
-            detalles: v.detalles.map(d => ({
+            detalles: v.detalles.map((d) => ({
               producto_id: d.producto_id,
               talla_id: d.talla_id,
               color_id: d.color_id,
               cantidad: d.cantidad,
-              precio_unitario: d.precio_unitario
-            }))
-          }))
+              precio_unitario: d.precio_unitario,
+            })),
+          })),
         };
 
         const resVentas: any = await firstValueFrom(
-          this.http.post(`${this.apiUrl}/ventas/sincronizar-offline`, payloadVentas)
+          this.http.post(`${this.apiUrl}/ventas/sincronizar-offline`, payloadVentas),
         );
 
         ventasConfirmadas = resVentas.confirmadas;
@@ -103,8 +109,12 @@ export class OfflineSyncService {
         for (const item of resVentas.resultados) {
           if (item.estado === 'CONFIRMADA') {
             await this.storage.actualizarEstadoVenta(item.operacion_uuid, 'CONFIRMADA');
-          } else {
-            await this.storage.actualizarEstadoVenta(item.operacion_uuid, 'RECHAZADA_CONFLICTO', item.mensaje);
+          } else if (item.estado === 'RECHAZADA_CONFLICTO') {
+            await this.storage.actualizarEstadoVenta(
+              item.operacion_uuid,
+              'RECHAZADA_CONFLICTO',
+              item.mensaje,
+            );
           }
         }
       }
@@ -112,23 +122,23 @@ export class OfflineSyncService {
       // 2. Sincronizar Reservas
       if (reservas.length > 0) {
         const payloadReservas = {
-          reservas: reservas.map(r => ({
+          reservas: reservas.map((r) => ({
             usuario_id: r.usuario_id,
             sucursal_id: r.sucursal_id,
             empresa_id: r.empresa_id,
             operacion_uuid: r.operacion_uuid,
             origen: 'PWA_OFFLINE',
-            detalles: r.detalles.map(d => ({
+            detalles: r.detalles.map((d) => ({
               producto_id: d.producto_id,
               talla_id: d.talla_id,
               color_id: d.color_id,
-              cantidad: d.cantidad
-            }))
-          }))
+              cantidad: d.cantidad,
+            })),
+          })),
         };
 
         const resReservas: any = await firstValueFrom(
-          this.http.post(`${this.apiUrl}/reservas/sincronizar-offline`, payloadReservas)
+          this.http.post(`${this.apiUrl}/reservas/sincronizar-offline`, payloadReservas),
         );
 
         reservasConfirmadas = resReservas.confirmadas;
@@ -136,8 +146,12 @@ export class OfflineSyncService {
         for (const item of resReservas.resultados) {
           if (item.estado === 'CONFIRMADA') {
             await this.storage.actualizarEstadoReserva(item.operacion_uuid, 'CONFIRMADA');
-          } else {
-            await this.storage.actualizarEstadoReserva(item.operacion_uuid, 'RECHAZADA_CONFLICTO', item.mensaje);
+          } else if (item.estado === 'RECHAZADA_CONFLICTO') {
+            await this.storage.actualizarEstadoReserva(
+              item.operacion_uuid,
+              'RECHAZADA_CONFLICTO',
+              item.mensaje,
+            );
           }
         }
       }
@@ -148,7 +162,7 @@ export class OfflineSyncService {
         ventas_confirmadas: ventasConfirmadas,
         ventas_rechazadas_conflicto: ventasRechazadas,
         reservas_confirmadas: reservasConfirmadas,
-        fecha: new Date().toLocaleTimeString()
+        fecha: new Date().toLocaleTimeString(),
       };
       this.ultimoResultadoSincronizacion$.next(resumen);
 
@@ -156,7 +170,10 @@ export class OfflineSyncService {
       return { exito: true, mensaje: msg, resumen };
     } catch (error: any) {
       console.error('[OfflineSync] Error durante la sincronización:', error);
-      return { exito: false, mensaje: 'Error al comunicarse con el servidor durante la sincronización.' };
+      return {
+        exito: false,
+        mensaje: 'Error al comunicarse con el servidor durante la sincronización.',
+      };
     } finally {
       this.sincronizando$.next(false);
     }

@@ -1,0 +1,120 @@
+<div class="bitacora-container">
+  <div class="header-box">
+    <h2>Bitácora del Sistema y Auditoría</h2>
+    <p class="subtitle">
+      Registro cronológico de eventos, accesos y operaciones críticas en la plataforma
+    </p>
+  </div>
+
+  <!-- Barra de Filtros -->
+  <div class="filters-card glass-card">
+    <div class="filter-group">
+      <label>Módulo</label>
+      <select [(ngModel)]="filtroModulo" (change)="cargarEventos()">
+        <option value="">Todos los módulos</option>
+        <option *ngFor="let m of modulos" [value]="m">{{ m }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Buscar Acción</label>
+      <input
+        type="text"
+        placeholder="Ej: LOGIN, VENTA..."
+        [(ngModel)]="filtroAccion"
+        (keyup.enter)="cargarEventos()"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Usuario / Email</label>
+      <input
+        type="text"
+        placeholder="Filtrar por correo..."
+        [(ngModel)]="filtroEmail"
+        (keyup.enter)="cargarEventos()"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Desde</label>
+      <input type="date" [(ngModel)]="filtroFechaDesde" (change)="cargarEventos()" />
+    </div>
+
+    <div class="filter-group">
+      <label>Hasta</label>
+      <input type="date" [(ngModel)]="filtroFechaHasta" (change)="cargarEventos()" />
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-primary" (click)="cargarEventos()">Filtrar</button>
+      <button class="btn-secondary" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </div>
+
+  <p *ngIf="error" class="error-banner">{{ error }}</p>
+
+  <div *ngIf="cargando" class="loading-state">
+    <span>Cargando eventos de la bitácora...</span>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="stats-bar">
+    <span class="count-pill">Total Eventos Registrados: <strong>{{ eventos.length }}</strong></span>
+  </div>
+
+  <!-- Tabla de Bitácora -->
+  <div class="table-container glass-card" *ngIf="!cargando">
+    <div *ngIf="eventos.length === 0" class="empty-state">
+      <p>No se encontraron eventos en la bitácora con los filtros seleccionados.</p>
+    </div>
+
+    <table *ngIf="eventos.length > 0" class="bitacora-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha y Hora</th>
+          <th>Acción</th>
+          <th>Módulo</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th *ngIf="isPlatformAdmin">Empresa</th>
+          <th>IP</th>
+          <th>Detalle de la Operación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ev of eventos">
+          <td><code>#{{ ev.id }}</code></td>
+          <td>{{ ev.fecha | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+          <td>
+            <span
+              class="action-badge"
+              [ngClass]="{
+                login: ev.accion.includes('LOGIN_EXITOSO'),
+                fallido: ev.accion.includes('FALLIDO') || ev.accion.includes('ERROR'),
+                crear: ev.accion.includes('CREAR'),
+                modificar: ev.accion.includes('UPDATE') || ev.accion.includes('CAMBIO'),
+                info: !ev.accion.includes('LOGIN') && !ev.accion.includes('FALLIDO')
+              }"
+            >
+              {{ ev.accion }}
+            </span>
+          </td>
+          <td><span class="module-tag">{{ ev.modulo }}</span></td>
+          <td>
+            <strong>{{ ev.usuario_nombre || 'Sistema' }}</strong><br />
+            <small class="muted-text">{{ ev.usuario_email || '-' }}</small>
+          </td>
+          <td><span class="role-badge">{{ ev.rol || '-' }}</span></td>
+          <td *ngIf="isPlatformAdmin">
+            <span>{{ ev.empresa_nombre || (ev.empresa_id ? 'Empresa #' + ev.empresa_id : 'Plataforma') }}</span>
+          </td>
+          <td><code>{{ ev.ip || 'Local' }}</code></td>
+          <td><span class="detalle-text">{{ ev.detalle || '-' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

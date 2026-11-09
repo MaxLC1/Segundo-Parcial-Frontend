@@ -19,6 +19,7 @@ export class Dashboard implements OnInit {
   userName: string | null = '';
   empresaNombre: string = '';
   empresaId: number = 1;
+  empresasDisponibles: any[] = [];
 
   // Estado Offline & PWA
   isOnline: boolean = true;
@@ -58,6 +59,16 @@ export class Dashboard implements OnInit {
       this.isSyncing = syncing;
       this.cdr.detectChanges();
     });
+
+    if (this.userRole === 'AdministradorPlataforma') {
+      this.saasService.getEmpresas().subscribe({
+        next: (list) => {
+          this.empresasDisponibles = list;
+          this.cdr.detectChanges();
+        },
+        error: () => {}
+      });
+    }
   }
 
   async sincronizarAhora() {

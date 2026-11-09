@@ -4,12 +4,12 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ReservasService {
   private apiUrl = environment.apiUrl + '/reservas';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getReservas(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
@@ -20,7 +20,6 @@ export class ReservasService {
   }
 
   cambiarEstado(id: number, estado: string): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}/estado?estado=${estado}`, {});
+    return this.http.put<any>(`${this.apiUrl}/${id}/estado?estado=${estado}`, {});
   }
 }
-

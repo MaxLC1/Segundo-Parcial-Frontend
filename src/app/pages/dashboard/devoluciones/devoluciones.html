@@ -1,600 +1,86 @@
-<div class="header-actions">
-  <div>
-    <h3>Gestión de Devoluciones y Cambios de Prendas</h3>
-    <p class="subtitle">Administra devoluciones, notas digitales para delivery (en marcha vs completadas) y cambios dentro de la ventana de 30 días.</p>
+<h2>Devoluciones y cambios</h2>
+<p class="error" role="alert" *ngIf="error">{{ error }}</p>
+<p class="success" role="status" *ngIf="message">{{ message }}</p>
+<section class="card" *ngIf="politica">
+  <h3>Política de la empresa</h3>
+  <div class="policy">
+    <label>Admitir devoluciones<input type="checkbox" [(ngModel)]="politica.activa" /></label>
+    <label
+      >Plazo desde compra (días)<input
+        type="number"
+        min="0"
+        max="365"
+        [(ngModel)]="politica.plazo_maximo_dias"
+    /></label>
+    <label
+      >Vigencia de nota (días)<input
+        type="number"
+        min="1"
+        max="365"
+        [(ngModel)]="politica.vigencia_nota_dias"
+    /></label>
+    <label
+      >Saldo a favor<select [(ngModel)]="politica.tipo_reembolso_menor_valor">
+        <option value="CUPON_CREDITO">Cupón de crédito</option>
+        <option value="REEMBOLSO_100_PCT">Reembolso del 100%</option>
+        <option value="REEMBOLSO_50_PCT">Reembolso del 50%</option>
+        <option value="REEMBOLSO_PORCENTAJE">Porcentaje personalizado</option>
+        <option value="SIN_REEMBOLSO">Sin reintegro</option>
+      </select></label
+    >
+    <label *ngIf="politica.tipo_reembolso_menor_valor === 'REEMBOLSO_PORCENTAJE'"
+      >Porcentaje<input type="number" min="0" max="100" [(ngModel)]="politica.porcentaje_reembolso"
+    /></label>
+    <label
+      >Permitir cambio por mayor valor<input
+        type="checkbox"
+        [(ngModel)]="politica.permite_cambio_mayor_valor"
+    /></label>
   </div>
-  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-    <button class="btn-primary" style="width: auto; background: linear-gradient(135deg, #4f46e5, #7c3aed);" (click)="showCrearNotaModal = true">
-      + Emitir Nota de Devolución
-    </button>
-    <button class="btn-secondary" style="width: auto;" (click)="showCambioModal = true">Solicitar Cambio de Prenda</button>
-    <button class="btn-secondary" style="width: auto;" (click)="showModal = true">+ Reembolso Directo</button>
-  </div>
-</div>
-
-<!-- Selector de Pestañas -->
-<div class="tabs-nav" style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; flex-wrap: wrap;">
-  <button 
-    (click)="tabActivo = 'notas'" 
-    [style.border-bottom]="tabActivo === 'notas' ? '3px solid var(--primary, #4f46e5)' : 'none'"
-    [style.color]="tabActivo === 'notas' ? 'var(--primary, #4f46e5)' : '#64748b'"
-    style="background: transparent; border: none; font-weight: 700; font-size: 1rem; padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-    <span>Notas de Devolución (Delivery & Admin)</span>
-    <span class="badge" style="background: #e0e7ff; color: #4338ca; font-weight: bold;">{{ notas.length }}</span>
-  </button>
-  <button 
-    (click)="tabActivo = 'cambios'" 
-    [style.border-bottom]="tabActivo === 'cambios' ? '3px solid var(--primary, #4f46e5)' : 'none'"
-    [style.color]="tabActivo === 'cambios' ? 'var(--primary, #4f46e5)' : '#64748b'"
-    style="background: transparent; border: none; font-weight: 600; font-size: 1rem; padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-    <span>Cambios de Prendas (30 Días)</span>
-    <span class="badge" style="background: #fef3c7; color: #b45309;">{{ cambios.length }}</span>
-  </button>
-  <button 
-    (click)="tabActivo = 'devoluciones'" 
-    [style.border-bottom]="tabActivo === 'devoluciones' ? '3px solid var(--primary, #4f46e5)' : 'none'"
-    [style.color]="tabActivo === 'devoluciones' ? 'var(--primary, #4f46e5)' : '#64748b'"
-    style="background: transparent; border: none; font-weight: 600; font-size: 1rem; padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-    <span>Solicitudes Básicas</span>
-    <span class="badge" style="background: #f1f5f9; color: #475569;">{{ devoluciones.length }}</span>
-  </button>
-</div>
-
-
-<!-- TAB 1: DEVOLUCIONES -->
-<div class="table-container" *ngIf="!isLoading && tabActivo === 'devoluciones'">
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>ID Venta</th>
-        <th>Tipo</th>
-        <th>Motivo</th>
-        <th>Estado</th>
-        <th>Asignar Delivery</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let dev of devoluciones">
-        <td>#{{ dev.id }}</td>
-        <td class="font-bold">#{{ dev.venta_id }}</td>
-        <td><span class="badge" style="background-color: #f1f5f9; color: var(--text-main);">{{ dev.tipo_solicitud || 'Devolución' }}</span></td>
-        <td>{{ dev.motivo }}</td>
-        <td>
-          <span class="badge" [ngClass]="{'badge-active': dev.estado === 'Completada', 'badge-inactive': dev.estado === 'Pendiente' || dev.estado === 'En Proceso'}">
-            {{ dev.estado }}
-          </span>
-        </td>
-        <td>
-          <div *ngIf="dev.requiere_delivery === 1">
-            <select class="input-field" (change)="asignarRepartidor(dev.id, $event)" *ngIf="dev.estado === 'Pendiente'" style="padding: 6px; width: auto;">
-              <option value="">Asignar Repartidor...</option>
-              <option *ngFor="let r of repartidores" [value]="r.id">{{ r.nombre_completo }}</option>
-            </select>
-            <span *ngIf="dev.estado !== 'Pendiente'" style="color: var(--text-muted); font-size: 0.9rem;">Ya asignado</span>
-          </div>
-          <div *ngIf="dev.requiere_delivery === 0">
-            <span style="color: var(--text-muted); font-size: 0.9rem;">Cliente en tienda</span>
-          </div>
-        </td>
-      </tr>
-      <tr *ngIf="devoluciones.length === 0">
-        <td colspan="6" class="empty-state">No hay devoluciones registradas</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- TAB 2: CAMBIOS DE PRENDAS (Req 7.2) -->
-<div class="table-container" *ngIf="!isLoading && tabActivo === 'cambios'">
-  <table>
-    <thead>
-      <tr>
-        <th>ID Cambio</th>
-        <th>Venta Origen</th>
-        <th>Prenda Anterior</th>
-        <th>Prenda Nueva</th>
-        <th>Diferencia Precio</th>
-        <th>Motivo</th>
-        <th>Fecha Registro</th>
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let c of cambios">
-        <td><strong>#{{ c.id }}</strong></td>
-        <td><span class="badge" style="background: #ede9fe; color: #6d28d9;">Venta #{{ c.venta_id }}</span></td>
-        <td>
-          <div><strong>{{ getProductoNombre(c.producto_anterior_id) }}</strong></div>
-          <small class="text-muted">Talla: {{ getTallaNombre(c.talla_anterior_id) }} | Color: {{ getColorNombre(c.color_anterior_id) }}</small>
-        </td>
-        <td>
-          <div><strong style="color: #059669;">{{ getProductoNombre(c.producto_nuevo_id) }}</strong></div>
-          <small class="text-muted">Talla: {{ getTallaNombre(c.talla_nueva_id) }} | Color: {{ getColorNombre(c.color_nueva_id) }}</small>
-        </td>
-        <td>
-          <span [style.color]="c.diferencia_precio > 0 ? '#b91c1c' : (c.diferencia_precio < 0 ? '#059669' : '#475569')">
-            {{ c.diferencia_precio >= 0 ? '+' : '' }}Bs. {{ c.diferencia_precio }}
-          </span>
-        </td>
-        <td style="max-width: 200px; font-size: 0.88rem;">{{ c.motivo }}</td>
-        <td style="font-size: 0.85rem; color: #64748b;">{{ c.fecha_cambio | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>
-          <span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 600;">{{ c.estado || 'Procesado' }}</span>
-        </td>
-      </tr>
-      <tr *ngIf="cambios.length === 0">
-        <td colspan="8" class="empty-state">
-          <div style="padding: 24px;">
-            <p>No se han registrado solicitudes de cambio de prendas en este tenant.</p>
-            <button class="btn-primary" style="margin-top: 12px; width: auto;" (click)="showCambioModal = true">Registrar Primer Cambio</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- TAB 3: NOTAS DE DEVOLUCIÓN PARA DELIVERY Y ADMIN -->
-<div *ngIf="!isLoading && tabActivo === 'notas'">
-  <!-- Sub-Filtros de Notas -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-    <div style="display: flex; gap: 8px;">
-      <button 
-        (click)="filtroNotas = 'EN_MARCHA'" 
-        [style.background]="filtroNotas === 'EN_MARCHA' ? '#4f46e5' : '#ffffff'"
-        [style.color]="filtroNotas === 'EN_MARCHA' ? '#ffffff' : '#475569'"
-        style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
-        En Marcha / Pendientes
-      </button>
-      <button 
-        (click)="filtroNotas = 'COMPLETADA'" 
-        [style.background]="filtroNotas === 'COMPLETADA' ? '#10b981' : '#ffffff'"
-        [style.color]="filtroNotas === 'COMPLETADA' ? '#ffffff' : '#475569'"
-        style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
-        Completadas (Histórico Admin)
-      </button>
-      <button 
-        (click)="filtroNotas = 'TODAS'" 
-        [style.background]="filtroNotas === 'TODAS' ? '#64748b' : '#ffffff'"
-        [style.color]="filtroNotas === 'TODAS' ? '#ffffff' : '#475569'"
-        style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; font-weight: 600; font-size: 0.88rem; cursor: pointer;">
-        Todas las Notas
-      </button>
-    </div>
-    <span style="font-size: 0.85rem; color: #64748b;">
-      Total mostradas: <strong>{{ notasFiltradas.length }}</strong> notas de devolución
-    </span>
-  </div>
-
-  <div class="table-container">
+  <button class="btn-primary" (click)="savePolicy()">Guardar política</button>
+</section>
+<section class="card">
+  <h3>Registrar solicitud</h3>
+  <app-return-form
+    [ventas]="ventas"
+    [productos]="productos"
+    [tallas]="tallas"
+    [colores]="colores"
+    [busy]="busy"
+    (save)="save($event)"
+  />
+</section>
+<section class="card">
+  <h3>Notas e historial</h3>
+  <div style="overflow: auto">
     <table>
       <thead>
         <tr>
-          <th>Código Nota</th>
-          <th>Venta Ref.</th>
-          <th>Tipo Solicitud</th>
-          <th>Prenda Devuelta</th>
-          <th>Prenda Sustituta</th>
-          <th>Ajuste de Precio</th>
+          <th>Nota / Compra</th>
+          <th>Tipo</th>
+          <th>Prendas</th>
+          <th>Resolución</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th>Acción</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let n of notasFiltradas">
+        <tr *ngFor="let n of notas">
+          <td>{{ n.codigo_nota }}<br />Compra #{{ n.venta_id }}</td>
+          <td>{{ n.tipo_solicitud }}</td>
+          <td>{{ n.prenda_devuelta_info }}<br />{{ n.prenda_nueva_info }}</td>
+          <td>{{ n.mensaje_notificacion }}<br />{{ n.cupon_generado }}</td>
+          <td>{{ n.estado }}<br />Vence: {{ n.fecha_expiracion | date: 'shortDate' }}</td>
           <td>
-            <strong style="color: #4f46e5; font-family: monospace; font-size: 0.95rem;">{{ n.codigo_nota }}</strong>
-            <div style="font-size: 0.75rem; color: #94a3b8;">{{ n.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</div>
-          </td>
-          <td><span class="badge" style="background: #f1f5f9; color: #334155;">#{{ n.venta_id }}</span></td>
-          <td>
-            <span class="badge" [style.background]="n.tipo_solicitud.includes('Mayor') ? '#fef2f2' : '#f0fdf4'" [style.color]="n.tipo_solicitud.includes('Mayor') ? '#b91c1c' : '#15803d'">
-              {{ n.tipo_solicitud }}
-            </span>
-          </td>
-          <td style="font-size: 0.88rem;">{{ n.prenda_devuelta_info }}</td>
-          <td style="font-size: 0.88rem;">{{ n.prenda_nueva_info || 'Devolución' }}</td>
-          <td>
-            <div *ngIf="n.diferencia_precio > 0" style="color: #dc2626; font-weight: 600; font-size: 0.88rem;">
-              +{{ n.diferencia_precio }} Bs. (Paga Cliente)
-            </div>
-            <div *ngIf="n.diferencia_precio < 0" style="color: #059669; font-weight: 600; font-size: 0.88rem;">
-              {{ n.diferencia_precio }} Bs. (Cupón Crédito)
-            </div>
-            <div *ngIf="n.diferencia_precio === 0" style="color: #64748b; font-size: 0.88rem;">
-              Sin diferencia (0.00 Bs.)
-            </div>
-            <small *ngIf="n.cupon_generado" style="display: block; font-family: monospace; color: #4338ca;">
-              {{ n.cupon_generado }}
-            </small>
-          </td>
-          <td>
-            <span class="badge" [style.background]="n.estado === 'EN_MARCHA' ? '#fef3c7' : '#dcfce7'" [style.color]="n.estado === 'EN_MARCHA' ? '#b45309' : '#15803d'">
-              {{ n.estado === 'EN_MARCHA' ? 'En Marcha' : 'Completada' }}
-            </span>
-            <div *ngIf="n.visible_para_cliente" style="font-size: 0.72rem; color: #6366f1; margin-top: 3px;">
-              Visible en app cliente
-            </div>
-            <div *ngIf="!n.visible_para_cliente && n.estado === 'COMPLETADA'" style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">
-              Archivada en Admin
-            </div>
-          </td>
-          <td>
-            <div style="display: flex; gap: 6px;">
-              <button 
-                class="btn-secondary" 
-                style="padding: 5px 10px; font-size: 0.82rem; width: auto;" 
-                (click)="abrirNotaDelivery(n)">
-                Nota Delivery
-              </button>
-              <button 
-                *ngIf="n.estado === 'EN_MARCHA'" 
-                class="btn-primary" 
-                style="padding: 5px 10px; font-size: 0.82rem; width: auto; background: #10b981;" 
-                (click)="completarNota(n.id)">
-                Completar
-              </button>
-            </div>
+            <button *ngIf="n.estado === 'EN_MARCHA'" (click)="complete(n)">
+              Completar devolución
+            </button>
           </td>
         </tr>
-        <tr *ngIf="notasFiltradas.length === 0">
-          <td colspan="8" class="empty-state">
-            <div style="padding: 24px;">
-              <p>No hay notas de devolución registradas en esta categoría.</p>
-              <button class="btn-primary" style="margin-top: 10px; width: auto;" (click)="showCrearNotaModal = true">+ Emitir Primera Nota de Devolución</button>
-            </div>
-          </td>
+        <tr *ngIf="!notas.length">
+          <td colspan="6">Aún no hay solicitudes.</td>
         </tr>
       </tbody>
     </table>
   </div>
-</div>
-
-<!-- MODAL: SOLICITAR DEVOLUCION -->
-
-<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
-  <div class="modal-content glass-card" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Solicitar Nueva Devolución</h3>
-      <button class="btn-close" (click)="showModal = false">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="input-group">
-        <label>Seleccionar Venta</label>
-        <select class="input-field" [(ngModel)]="nuevaDev.venta_id">
-          <option value="">Seleccione una venta...</option>
-          <option *ngFor="let v of ventas" [value]="v.id">Venta #{{ v.id }} - Total: Bs. {{ v.total }}</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label>Tipo de Solicitud</label>
-        <select class="input-field" [(ngModel)]="nuevaDev.tipo_solicitud">
-          <option value="Devolución">Reembolso / Devolución</option>
-          <option value="Cambio">Cambio de Talla / Color</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Método de Entrega</label>
-        <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 5px;">
-          <input type="checkbox" [(ngModel)]="nuevaDev.requiere_delivery">
-          Solicitar recojo y envío por Delivery (Costo Extra)
-        </label>
-      </div>
-
-      <div class="input-group">
-        <label>Detalle o Motivo</label>
-        <textarea class="input-field" rows="3" [(ngModel)]="nuevaDev.motivo" placeholder="Ej: Devolución por inconformidad"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="showModal = false">Cancelar</button>
-      <button class="btn-primary" style="width: auto;" (click)="crearDevolucion()">Guardar Devolución</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: REGISTRAR CAMBIO DE PRENDA (Req 7.2 - Ventana de 30 días) -->
-<div class="modal-overlay" *ngIf="showCambioModal" (click)="showCambioModal = false">
-  <div class="modal-content glass-card" style="max-width: 720px;" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Cambio de Prenda de Vestir (Ventana 30 Días)</h3>
-      <button class="btn-close" (click)="showCambioModal = false">×</button>
-    </div>
-    <div class="modal-body">
-      
-      <!-- Banner Regla de Negocio -->
-      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.88rem; color: #1e40af;">
-        <strong>ℹ️ Regla de Negocio (Req 7.2):</strong>
-        El cambio de prendas solo es válido dentro de los <strong>30 días naturales</strong> contados a partir de la emisión del comprobante.
-        El sistema reintegrará automáticamente la prenda entregada al inventario y descontará la nueva prenda seleccionada.
-      </div>
-
-      <!-- Alertas -->
-      <div *ngIf="cambioError" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem;">
-        {{ cambioError }}
-      </div>
-      <div *ngIf="cambioSuccess" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 0.9rem;">
-        {{ cambioSuccess }}
-      </div>
-
-      <div class="input-group">
-        <label>Venta Asociada (Comprobante)</label>
-        <select class="input-field" [(ngModel)]="nuevoCambio.venta_id">
-          <option value="">Seleccione una venta...</option>
-          <option *ngFor="let v of ventas" [value]="v.id">Venta #{{ v.id }} - Bs. {{ v.total }} (Fecha: {{ v.fecha | date:'dd/MM/yyyy' }})</option>
-        </select>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        
-        <!-- Prenda Anterior -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
-          <h4 style="margin: 0 0 10px 0; color: #dc2626; font-size: 0.95rem;">Prenda a Devolver (Reintegro Stock)</h4>
-          
-          <div class="input-group">
-            <label style="font-size: 0.82rem;">Producto</label>
-            <select class="input-field" [(ngModel)]="nuevoCambio.producto_anterior_id">
-              <option value="">Seleccione prenda...</option>
-              <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} (Bs. {{ p.precio }})</option>
-            </select>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div class="input-group">
-              <label style="font-size: 0.82rem;">Talla</label>
-              <select class="input-field" [(ngModel)]="nuevoCambio.talla_anterior_id">
-                <option *ngFor="let t of tallas" [value]="t.id">{{ t.nombre }}</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label style="font-size: 0.82rem;">Color</label>
-              <select class="input-field" [(ngModel)]="nuevoCambio.color_anterior_id">
-                <option *ngFor="let c of colores" [value]="c.id">{{ c.nombre }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Prenda Nueva -->
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px;">
-          <h4 style="margin: 0 0 10px 0; color: #16a34a; font-size: 0.95rem;">Nueva Prenda a Entregar (Deducción Stock)</h4>
-          
-          <div class="input-group">
-            <label style="font-size: 0.82rem;">Producto</label>
-            <select class="input-field" [(ngModel)]="nuevoCambio.producto_nuevo_id">
-              <option value="">Seleccione prenda...</option>
-              <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }} (Bs. {{ p.precio }})</option>
-            </select>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div class="input-group">
-              <label style="font-size: 0.82rem;">Talla</label>
-              <select class="input-field" [(ngModel)]="nuevoCambio.talla_nueva_id">
-                <option *ngFor="let t of tallas" [value]="t.id">{{ t.nombre }}</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label style="font-size: 0.82rem;">Color</label>
-              <select class="input-field" [(ngModel)]="nuevoCambio.color_nueva_id">
-                <option *ngFor="let c of colores" [value]="c.id">{{ c.nombre }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 14px;">
-        <div class="input-group">
-          <label>Motivo del Cambio</label>
-          <input type="text" class="input-field" [(ngModel)]="nuevoCambio.motivo" placeholder="Ej: Cambio de talla incorrecta / color no deseado">
-        </div>
-        <div class="input-group">
-          <label>Diferencia de Precio (Bs.)</label>
-          <input type="number" step="0.5" class="input-field" [(ngModel)]="nuevoCambio.diferencia_precio" placeholder="0.0">
-        </div>
-      </div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="showCambioModal = false">Cancelar</button>
-      <button class="btn-primary" style="width: auto;" (click)="registrarCambio()">Procesar Cambio</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: CREAR NOTA DE DEVOLUCIÓN DIGITAL -->
-<div class="modal-overlay" *ngIf="showCrearNotaModal" (click)="showCrearNotaModal = false">
-  <div class="modal-content glass-card" style="max-width: 680px;" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Emitir Nota de Devolución Oficial</h3>
-      <button class="btn-close" (click)="showCrearNotaModal = false">×</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 14px;">
-        Esta nota generará un comprobante digital para que el cliente lo muestre al repartidor de delivery. Si existe variación de precios, se notificará el cobro de diferencia o la emisión de cupón.
-      </p>
-
-      <div *ngIf="notaError" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.88rem;">
-        {{ notaError }}
-      </div>
-      <div *ngIf="notaSuccess" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 0.88rem;">
-        {{ notaSuccess }}
-      </div>
-
-      <div class="input-group">
-        <label>Venta Original Asociada</label>
-        <select class="input-field" [(ngModel)]="nuevaNota.venta_id">
-          <option value="">Seleccione una venta...</option>
-          <option *ngFor="let v of ventas" [value]="v.id">Venta #{{ v.id }} - Bs. {{ v.total }}</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Tipo de Solicitud</label>
-        <select class="input-field" [(ngModel)]="nuevaNota.tipo_solicitud">
-          <option value="Cambio por Mayor Valor">Cambio por Prenda de Mayor Valor (Cliente paga diferencia)</option>
-          <option value="Cambio por Menor Valor">Cambio por Prenda de Menor Valor (Cupón crédito / Reembolso tienda)</option>
-          <option value="Cambio de Talla o Color">Cambio Directo de Talla o Color (Mismo precio)</option>
-          <option value="Devolución Directa">Devolución y Retiro de Producto</option>
-        </select>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-        <div class="input-group">
-          <label>Prenda a Recoger (Devuelta)</label>
-          <input type="text" class="input-field" [(ngModel)]="nuevaNota.prenda_devuelta_info" placeholder="Ej: Camisa Slim Fit Azul Talla M">
-        </div>
-        <div class="input-group">
-          <label>Precio Pagado Original (Bs.)</label>
-          <input type="number" class="input-field" [(ngModel)]="nuevaNota.precio_prenda_original">
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" *ngIf="nuevaNota.tipo_solicitud !== 'Devolución Directa'">
-        <div class="input-group">
-          <label>Prenda Sustituta (A Entregar)</label>
-          <input type="text" class="input-field" [(ngModel)]="nuevaNota.prenda_nueva_info" placeholder="Ej: Chaqueta Cuero Sintético Talla L">
-        </div>
-        <div class="input-group">
-          <label>Precio Prenda Nueva (Bs.)</label>
-          <input type="number" class="input-field" [(ngModel)]="nuevaNota.precio_prenda_nueva">
-        </div>
-      </div>
-
-      <!-- Cálculo Automático Preview -->
-      <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-          <span>Diferencia Estimada:</span>
-          <strong>Bs. {{ (nuevaNota.precio_prenda_nueva - nuevaNota.precio_prenda_original).toFixed(2) }}</strong>
-        </div>
-        <small style="color: #64748b; display: block; margin-top: 4px;">
-          * Si el resultado es positivo (+), el cliente abona la diferencia al delivery. Si es negativo (-), se genera automáticamente cupón comercial.
-        </small>
-      </div>
-
-      <div class="input-group" style="margin-top: 12px;">
-        <label>Motivo y Observaciones para el Delivery</label>
-        <textarea class="input-field" rows="2" [(ngModel)]="nuevaNota.motivo" placeholder="Ej: Cliente solicita cambio por prenda más abrigada."></textarea>
-      </div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="showCrearNotaModal = false">Cancelar</button>
-      <button class="btn-primary" style="width: auto; background: #4f46e5;" (click)="crearNotaDevolucion()">Generar Nota Digital</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: FORMATO NOTA DE DEVOLUCIÓN PARA DELIVERY (Comprobante Visual) -->
-<div class="modal-overlay" *ngIf="showNotaDeliveryModal && notaSeleccionada" (click)="showNotaDeliveryModal = false">
-  <div class="modal-content glass-card" style="max-width: 540px; padding: 0; overflow: hidden; border: 2px solid #6366f1;" (click)="$event.stopPropagation()">
-    
-    <!-- Encabezado Estilo Voucher Delivery -->
-    <div style="background: linear-gradient(135deg, #312e81, #4338ca); color: white; padding: 20px; text-align: center;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px;">FASHIONSTORE LOGISTICS</span>
-        <button (click)="showNotaDeliveryModal = false" style="background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer;">×</button>
-      </div>
-      <h3 style="margin: 0; font-size: 1.3rem; letter-spacing: 0.5px;">NOTA OFICIAL DE DEVOLUCIÓN</h3>
-      <div style="font-family: monospace; font-size: 1.4rem; font-weight: bold; color: #a5b4fc; margin-top: 6px;">
-        {{ notaSeleccionada.codigo_nota }}
-      </div>
-      <div style="font-size: 0.82rem; color: #e0e7ff; margin-top: 4px;">
-        Presentar este comprobante digital al personal de delivery
-      </div>
-    </div>
-
-    <!-- Cuerpo del Comprobante -->
-    <div style="padding: 24px; background: #ffffff;">
-      
-      <!-- Estado y Notificación de Pago -->
-      <div [style.background]="notaSeleccionada.diferencia_precio > 0 ? '#fef2f2' : '#f0fdf4'" 
-           [style.border]="notaSeleccionada.diferencia_precio > 0 ? '1px solid #fecaca' : '1px solid #bbf7d0'" 
-           style="border-radius: 8px; padding: 14px; margin-bottom: 18px; text-align: center;">
-        <div style="font-size: 0.85rem; color: #475569; text-transform: uppercase; font-weight: bold;">
-          Instrucción Financiera para Delivery
-        </div>
-        <div *ngIf="notaSeleccionada.diferencia_precio > 0" style="color: #b91c1c; font-size: 1.25rem; font-weight: bold; margin-top: 4px;">
-          COBRAR AL CLIENTE: Bs. {{ notaSeleccionada.diferencia_precio.toFixed(2) }}
-        </div>
-        <div *ngIf="notaSeleccionada.diferencia_precio < 0" style="color: #15803d; font-size: 1.15rem; font-weight: bold; margin-top: 4px;">
-          TIENDA OTORGA CUPÓN: {{ notaSeleccionada.cupon_generado || 'CUPON-DEV' }}
-        </div>
-        <div *ngIf="notaSeleccionada.diferencia_precio === 0" style="color: #475569; font-size: 1.15rem; font-weight: bold; margin-top: 4px;">
-          CAMBIO EXACTO SIN COSTO ADICIONAL
-        </div>
-        <div style="font-size: 0.8rem; color: #64748b; margin-top: 6px;">
-          {{ notaSeleccionada.mensaje_notificacion }}
-        </div>
-      </div>
-
-      <!-- Datos de la Operación -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 0.85rem; border-bottom: 1px dashed #cbd5e1; padding-bottom: 14px;">
-        <div>
-          <span style="color: #64748b; display: block;">Venta de Referencia:</span>
-          <strong>#{{ notaSeleccionada.venta_id }}</strong>
-        </div>
-        <div>
-          <span style="color: #64748b; display: block;">Fecha de Emisión:</span>
-          <strong>{{ notaSeleccionada.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</strong>
-        </div>
-        <div>
-          <span style="color: #64748b; display: block;">Tipo de Operación:</span>
-          <strong>{{ notaSeleccionada.tipo_solicitud }}</strong>
-        </div>
-        <div>
-          <span style="color: #64748b; display: block;">Estado Operativo:</span>
-          <span class="badge" [style.background]="notaSeleccionada.estado === 'EN_MARCHA' ? '#fef3c7' : '#dcfce7'" [style.color]="notaSeleccionada.estado === 'EN_MARCHA' ? '#b45309' : '#15803d'">
-            {{ notaSeleccionada.estado }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Detalle de Prendas -->
-      <div style="background: #f8fafc; border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 0.88rem;">
-        <div style="margin-bottom: 10px;">
-          <span style="color: #ef4444; font-weight: bold;">PRENDA A RECOGER (Cliente entrega):</span>
-          <div style="font-weight: 600; margin-top: 2px;">{{ notaSeleccionada.prenda_devuelta_info }}</div>
-          <small style="color: #64748b;">Valor original: Bs. {{ notaSeleccionada.precio_prenda_original }}</small>
-        </div>
-        <div *ngIf="notaSeleccionada.prenda_nueva_info">
-          <span style="color: #10b981; font-weight: bold;">PRENDA A ENTREGAR (Delivery entrega):</span>
-          <div style="font-weight: 600; margin-top: 2px;">{{ notaSeleccionada.prenda_nueva_info }}</div>
-          <small style="color: #64748b;">Valor nueva prenda: Bs. {{ notaSeleccionada.precio_prenda_nueva }}</small>
-        </div>
-      </div>
-
-      <!-- Motivo -->
-      <div style="font-size: 0.85rem; color: #475569; margin-bottom: 20px;">
-        <strong>Motivo registrado:</strong> {{ notaSeleccionada.motivo }}
-      </div>
-
-      <!-- Código de Barras Simulado para Escaneo del Delivery -->
-      <div style="text-align: center; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; background: #fafafa;">
-        <div style="font-family: monospace; letter-spacing: 5px; font-size: 1.1rem; font-weight: bold;">
-          ||||| | |||| ||| ||||| || ||||
-        </div>
-        <span style="font-family: monospace; font-size: 0.8rem; color: #64748b;">*{{ notaSeleccionada.codigo_nota }}*</span>
-      </div>
-
-    </div>
-
-    <!-- Footer Modal -->
-    <div style="padding: 16px 24px; background: #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-      <button class="btn-secondary" style="width: auto;" (click)="showNotaDeliveryModal = false">Cerrar</button>
-      <button 
-        *ngIf="notaSeleccionada.estado === 'EN_MARCHA'" 
-        class="btn-primary" 
-        style="width: auto; background: #10b981;" 
-        (click)="completarNota(notaSeleccionada.id)">
-        Confirmar y Completar Entrega
-      </button>
-    </div>
-
-  </div>
-</div>
-
+</section>

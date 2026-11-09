@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Auth } from '../../services/auth';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CartService, CartItem } from '../../services/cart';
@@ -13,13 +14,14 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './shop.html',
-  styleUrls: ['./shop.css']
+  styleUrls: ['./shop.css'],
 })
 export class Shop implements OnInit {
+  operationUuid = crypto.randomUUID();
   isCartOpen = false;
   isCheckoutOpen = false;
   cartItems: CartItem[] = [];
-  
+
   sucursales: any[] = [];
   sucursalSeleccionada: number | null = null;
   misNotasActivas: any[] = [];
@@ -38,27 +40,36 @@ export class Shop implements OnInit {
   otpVerificando = false;
   tokenAutorizacionOTP: string | null = null;
 
-  constructor(public cartService: CartService, private http: HttpClient, private cdr: ChangeDetectorRef) {
-    this.cartService.cart$.subscribe(items => {
+  constructor(
+    public cartService: CartService,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    public auth: Auth,
+    private router: Router,
+  ) {
+    this.cartService.cart$.subscribe((items) => {
       this.cartItems = items;
-      this.cdr.detectChanges();
+      try {
+        this.cdr.markForCheck();
+      } catch (e) {}
     });
   }
 
   ngOnInit() {
-    this.http.get<any[]>(`${environment.apiUrl}/sucursales/sucursales`).subscribe(res => {
+    this.http.get<any[]>(`${environment.apiUrl}/sucursales/sucursales`).subscribe((res) => {
       this.sucursales = res;
     });
     this.cargarMisNotasActivas();
   }
 
   cargarMisNotasActivas() {
-    this.http.get<any[]>(`${environment.apiUrl}/devoluciones/mis-notas-activas?usuario_id=2`).subscribe({
+    if (!this.auth.isAuthenticated() || this.auth.getRole() !== 'Cliente') return;
+    this.http.get<any[]>(`${environment.apiUrl}/cliente/notas`).subscribe({
       next: (notas) => {
         this.misNotasActivas = notas;
         this.cdr.detectChanges();
       },
-      error: (e) => console.log('Sin notas activas de devolución', e)
+      error: (e) => console.log('Sin notas activas de devolución', e),
     });
   }
 
@@ -73,6 +84,11 @@ export class Shop implements OnInit {
   }
 
   openCheckout() {
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.correoCliente = this.auth.getEmail() || '';
     this.isCartOpen = false;
     this.isCheckoutOpen = true;
   }
@@ -97,16 +113,19 @@ export class Shop implements OnInit {
 
   confirmarPedido() {
     if (!this.correoCliente) {
-      alert("Por favor completa los datos requeridos.");
+      alert('Por favor completa los datos requeridos.');
       return;
     }
-    
-    if (this.tipoEntrega === 'Recojo en Tienda' && !this.sucursalSeleccionada) {
-      alert("Debes seleccionar una sucursal para el recojo.");
+
+    if (!this.sucursalSeleccionada) {
+      alert('Debes seleccionar una sucursal para el recojo.');
       return;
     }
-    if (this.tipoEntrega === 'Delivery' && (!this.direccionEnvio || this.direccionEnvio.trim() === '')) {
-      alert("Debes ingresar una dirección para el envío.");
+    if (
+      this.tipoEntrega === 'Delivery' &&
+      (!this.direccionEnvio || this.direccionEnvio.trim() === '')
+    ) {
+      alert('Debes ingresar una dirección para el envío.');
       return;
     }
 
@@ -124,13 +143,13 @@ export class Shop implements OnInit {
     this.isProcessing = true;
     this.otpError = '';
     this.otpInput = '';
-    
+
     const payload = {
       monto: this.cartService.getTotal(),
       metodo: this.metodoPagoGlobal,
       cliente_email: this.correoCliente,
       cliente_telefono: '+591 78012345',
-      empresa_id: 1
+      empresa_id: this.auth.getEmpresaId(),
     };
 
     this.http.post<any>(`${environment.apiUrl}/pagos/iniciar-pasarela`, payload).subscribe({
@@ -145,7 +164,7 @@ export class Shop implements OnInit {
       error: (err) => {
         this.isProcessing = false;
         this.manejarError(err);
-      }
+      },
     });
   }
 
@@ -160,7 +179,7 @@ export class Shop implements OnInit {
 
     const payload = {
       transaccion_id: this.otpTransaccionId,
-      codigo_otp: this.otpInput.trim()
+      codigo_otp: this.otpInput.trim(),
     };
 
     this.http.post<any>(`${environment.apiUrl}/pagos/validar-otp`, payload).subscribe({
@@ -180,7 +199,7 @@ export class Shop implements OnInit {
         this.otpVerificando = false;
         this.otpError = err.error?.detail || 'Error al validar el código OTP.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -191,58 +210,68 @@ export class Shop implements OnInit {
     // Si pagan presencial y es recojo, es una Reserva
     if (this.tipoEntrega === 'Recojo en Tienda' && this.metodoPagoGlobal === 'Caja') {
       const payload = {
-        usuario_id: 2,
+        usuario_id: this.auth.getUserId(),
+        operacion_uuid: this.operationUuid,
         sucursal_id: this.sucursalSeleccionada,
-        estado: "Pendiente",
-        detalles: this.cartItems.map(item => ({
+        estado: 'Pendiente',
+        detalles: this.cartItems.map((item) => ({
           producto_id: item.producto.id,
           talla_id: item.talla_id || 1,
           color_id: item.color_id || 1,
           cantidad: item.cantidad,
           precio_unitario: item.producto.precio_oferta || item.producto.precio,
-          subtotal: item.subtotal
-        }))
+          subtotal: item.subtotal,
+        })),
       };
 
       this.http.post(`${environment.apiUrl}/reservas/`, payload).subscribe({
         next: () => {
-          this.finalizarProceso("¡Reserva completada con éxito! Te esperamos en caja para realizar el pago.");
+          this.finalizarProceso(
+            '¡Reserva completada con éxito! Te esperamos en caja para realizar el pago.',
+          );
         },
         error: (err) => {
           this.manejarError(err);
-        }
+        },
       });
-
     } else {
       // Venta confirmada con o sin token de autorización OTP
       const payload = {
-        sucursal_id: this.sucursalSeleccionada || 1, 
-        usuario_id: 2,
+        sucursal_id: this.sucursalSeleccionada,
+        usuario_id: this.auth.getUserId(),
+        operacion_uuid: this.operationUuid,
         metodo_pago: this.metodoPagoGlobal,
-        transaccion_id: this.tokenAutorizacionOTP || (this.metodoPagoGlobal !== 'Efectivo' ? "TXN-" + Math.floor(Math.random() * 1000000) : null),
+        transaccion_id:
+          this.tokenAutorizacionOTP ||
+          (this.metodoPagoGlobal !== 'Efectivo'
+            ? 'TXN-' + Math.floor(Math.random() * 1000000)
+            : null),
         tipo_entrega: this.tipoEntrega,
-        direccion_envio: this.tipoEntrega === 'Delivery' ? this.direccionEnvio : 'Retiro en Tienda Pagado',
-        detalles: this.cartItems.map(item => ({
+        direccion_envio:
+          this.tipoEntrega === 'Delivery' ? this.direccionEnvio : 'Retiro en Tienda Pagado',
+        detalles: this.cartItems.map((item) => ({
           producto_id: item.producto.id,
           talla_id: item.talla_id || 1,
           color_id: item.color_id || 1,
           cantidad: item.cantidad,
           precio_unitario: item.producto.precio_oferta || item.producto.precio,
-          subtotal: item.subtotal
-        }))
+          subtotal: item.subtotal,
+        })),
       };
 
       this.http.post(`${environment.apiUrl}/ventas/`, payload).subscribe({
         next: () => {
           if (this.tipoEntrega === 'Delivery') {
-            this.finalizarProceso("¡Pago OTP exitoso! Tu orden está en camino con delivery.");
+            this.finalizarProceso('¡Pago OTP exitoso! Tu orden está en camino con delivery.');
           } else {
-            this.finalizarProceso("¡Pago online validado con OTP! Tus prendas te esperan listas en la sucursal.");
+            this.finalizarProceso(
+              '¡Pago online validado con OTP! Tus prendas te esperan listas en la sucursal.',
+            );
           }
         },
         error: (err) => {
           this.manejarError(err);
-        }
+        },
       });
     }
   }
@@ -264,6 +293,7 @@ export class Shop implements OnInit {
   finalizarProceso(mensaje: string) {
     this.isProcessing = false;
     this.cartService.clearCart();
+    this.operationUuid = crypto.randomUUID();
     this.successMessage = mensaje;
     this.isSuccess = true;
     this.cdr.detectChanges();
@@ -281,11 +311,10 @@ export class Shop implements OnInit {
     this.isProcessing = false;
     this.cdr.detectChanges();
     console.error(err);
-    alert("Hubo un error al procesar tu solicitud: " + (err.error?.detail || err.message));
+    alert('Hubo un error al procesar tu solicitud: ' + (err.error?.detail || err.message));
   }
 
   removeFromCart(index: number) {
     this.cartService.removeFromCart(index);
   }
 }
-

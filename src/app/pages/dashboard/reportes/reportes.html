@@ -4,8 +4,11 @@
     <div>
       <h2 class="title">Centro de Inteligencia de Negocios y Analítica</h2>
       <p class="subtitle">
-        Empresa: <strong>{{ empresaNombre }}</strong> &bull; Plan Actual: 
-        <span class="plan-badge" [ngClass]="{'pro': planNombre === 'Profesional', 'basic': planNombre === 'Básico'}">
+        Empresa: <strong>{{ empresaNombre }}</strong> &bull; Plan Actual:
+        <span
+          class="plan-badge"
+          [ngClass]="{ pro: planNombre === 'Profesional', basic: planNombre === 'Básico' }"
+        >
           {{ planNombre }}
         </span>
       </p>
@@ -19,7 +22,11 @@
       <button class="tab-btn" [class.active]="activeTab === 'ml'" (click)="seleccionarTab('ml')">
         Analítica Machine Learning
       </button>
-      <button class="tab-btn" [class.active]="activeTab === 'kpis'" (click)="seleccionarTab('kpis')">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'kpis'"
+        (click)="seleccionarTab('kpis')"
+      >
         KPIs Convencionales
       </button>
     </div>
@@ -27,7 +34,19 @@
 
   <!-- AVISO DE BLOQUEO SI PLAN BÁSICO -->
   <div *ngIf="!planPermiteIA && (activeTab === 'ia' || activeTab === 'ml')" class="plan-lock-card">
-    <div class="lock-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+    <div class="lock-icon">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    </div>
     <div class="lock-content">
       <h3>Función restringida por Plan de Suscripción</h3>
       <p>{{ errorMensajeIA }}</p>
@@ -44,21 +63,22 @@
     <!-- Barra de consulta por Lenguaje Natural y Voz -->
     <div class="query-card">
       <div class="input-group-voice">
-        <input 
-          type="text" 
-          [(ngModel)]="queryTexto" 
+        <input
+          type="text"
+          [(ngModel)]="queryTexto"
           (keyup.enter)="ejecutarConsultaIA()"
           placeholder="Escribe tu consulta empresarial o presiona el micrófono (ej: 'Ventas por sucursal', 'Top 10 productos')..."
           class="query-input"
           [disabled]="isLoadingIA"
         />
-        
-        <button 
-          class="voice-btn" 
+
+        <button
+          class="voice-btn"
           [class.recording]="isListeningVoice"
           (click)="iniciarReconocimientoVoz()"
-          [title]="isListeningVoice ? 'Escuchando tu voz...' : 'Consultar mediante voz'">
-          <span class="material-icons">{{ isListeningVoice ? 'mic' : 'mic_none' }}</span>
+          [title]="isListeningVoice ? 'Escuchando tu voz...' : 'Consultar mediante voz'"
+        >
+          <span aria-hidden="true">{{ isListeningVoice ? '⏹' : '🎙' }}</span>
           <span>{{ isListeningVoice ? 'Escuchando...' : 'Voz' }}</span>
         </button>
 
@@ -71,7 +91,11 @@
       <!-- Sugerencias rápidas -->
       <div class="chips-container">
         <span class="chip-label">Consultas sugeridas:</span>
-        <button *ngFor="let s of consultasSugeridas" class="chip-btn" (click)="ejecutarConsultaIA(s)">
+        <button
+          *ngFor="let s of consultasSugeridas"
+          class="chip-btn"
+          (click)="ejecutarConsultaIA(s)"
+        >
           {{ s }}
         </button>
       </div>
@@ -80,7 +104,9 @@
     <!-- Estado de carga -->
     <div *ngIf="isLoadingIA" class="loading-box">
       <div class="spinner"></div>
-      <p>La Inteligencia Artificial está interpretando tu solicitud y analizando la base de datos...</p>
+      <p>
+        La Inteligencia Artificial está interpretando tu solicitud y analizando la base de datos...
+      </p>
     </div>
 
     <!-- Error -->
@@ -97,15 +123,13 @@
           <h3>{{ reporteIA.titulo }}</h3>
         </div>
         <p class="narrative-text">{{ reporteIA.narrativa_ia }}</p>
-        
+
         <!-- Acciones de Exportación -->
         <div class="export-actions">
           <button class="export-btn excel" (click)="descargarExcel()">
             Exportar a Excel (.xlsx)
           </button>
-          <button class="export-btn pdf" (click)="descargarPdf()">
-            Exportar a PDF
-          </button>
+          <button class="export-btn pdf" (click)="descargarPdf()">Exportar a PDF</button>
         </div>
       </div>
 
@@ -144,10 +168,14 @@
   <div *ngIf="planPermiteIA && activeTab === 'ml'" class="tab-content">
     <div *ngIf="isLoadingML" class="loading-box">
       <div class="spinner"></div>
-      <p>Entrenando y evaluando modelos de Machine Learning sobre los datos del tenant...</p>
+      <p>Entrenando y evaluando modelos de Machine Learning con datos sintéticos...</p>
     </div>
 
     <div *ngIf="dashboardML && !isLoadingML" class="ml-dashboard">
+      <p>
+        Demostración académica con datos sintéticos. Los segmentos y pronósticos no describen
+        clientes reales.
+      </p>
       <!-- Fila 1: Métricas de los Modelos -->
       <div class="ml-metrics-grid">
         <!-- Tarjeta Modelo Supervisado -->
@@ -175,7 +203,9 @@
         <div class="metric-card unsupervised">
           <div class="card-tag">Aprendizaje No Supervisado</div>
           <h3>Clustering K-Means de Clientes</h3>
-          <p class="metric-desc">Identificación de patrones y agrupación comportamental sin etiquetas previas</p>
+          <p class="metric-desc">
+            Identificación de patrones y agrupación comportamental sin etiquetas previas
+          </p>
           <div class="clusters-summary">
             <div *ngFor="let s of dashboardML.segmentacion_clientes" class="cluster-mini-item">
               <strong>{{ s.nombre_segmento }}</strong>
@@ -214,11 +244,13 @@
             <tbody>
               <tr *ngFor="let seg of dashboardML.segmentacion_clientes">
                 <td>#{{ seg.cluster_id + 1 }}</td>
-                <td><strong>{{ seg.nombre_segmento }}</strong></td>
+                <td>
+                  <strong>{{ seg.nombre_segmento }}</strong>
+                </td>
                 <td>{{ seg.cantidad_clientes }}</td>
                 <td>{{ seg.porcentaje }}%</td>
                 <td>{{ seg.frecuencia_compras_mes }} compras/mes</td>
-                <td>BOB {{ seg.ticket_promedio_bob | number:'1.2-2' }}</td>
+                <td>BOB {{ seg.ticket_promedio_bob | number: '1.2-2' }}</td>
               </tr>
             </tbody>
           </table>
@@ -246,15 +278,40 @@
 
     <div *ngIf="reporteKpis && !isLoadingKpis" class="kpi-grid">
       <div class="kpi-card glass-card">
-        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg></div>
+        <div class="kpi-icon">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+            <path d="M12 6v2m0 8v2" />
+          </svg>
+        </div>
         <div class="kpi-info">
           <h3>Ingresos Totales</h3>
-          <p class="kpi-value">BOB {{ reporteKpis.total_ingresos | number:'1.2-2' }}</p>
+          <p class="kpi-value">BOB {{ reporteKpis.total_ingresos | number: '1.2-2' }}</p>
         </div>
       </div>
 
       <div class="kpi-card glass-card">
-        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <div class="kpi-icon">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
         <div class="kpi-info">
           <h3>Transacciones Confirmadas</h3>
           <p class="kpi-value">{{ reporteKpis.total_ventas }}</p>
@@ -262,10 +319,23 @@
       </div>
 
       <div class="kpi-card glass-card">
-        <div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <div class="kpi-icon">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <line x1="3" x2="21" y1="6" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </div>
         <div class="kpi-info">
           <h3>Ticket Promedio</h3>
-          <p class="kpi-value">BOB {{ reporteKpis.ticket_promedio | number:'1.2-2' }}</p>
+          <p class="kpi-value">BOB {{ reporteKpis.ticket_promedio | number: '1.2-2' }}</p>
         </div>
       </div>
 

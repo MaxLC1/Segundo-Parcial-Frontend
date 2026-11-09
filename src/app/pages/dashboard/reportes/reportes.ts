@@ -186,15 +186,56 @@ export class Reportes implements OnInit, AfterViewInit {
     if (!ctx) return;
 
     const tipo: any = this.reporteIA.grafico_tipo || 'bar';
+    const labels = this.reporteIA.grafico_data?.labels || [];
+
+    const palette = [
+      '#f97316', // Naranja FashionStore
+      '#6366f1', // Indigo elegante
+      '#10b981', // Verde esmeralda
+      '#f59e0b', // Ámbar dorado
+      '#ec4899', // Rosa
+      '#06b6d4', // Cyan
+      '#8b5cf6', // Violeta
+      '#3b82f6', // Azul
+    ];
+
+    const datasets = (this.reporteIA.grafico_data?.datasets || []).map((d: any) => {
+      if (tipo === 'bar') {
+        const bgColors = labels.map((_: any, i: number) => palette[i % palette.length]);
+        return {
+          ...d,
+          backgroundColor: bgColors,
+          borderColor: bgColors,
+          borderWidth: 1,
+          borderRadius: 8,
+          borderSkipped: false
+        };
+      }
+      if (tipo === 'line') {
+        return {
+          ...d,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249, 115, 22, 0.15)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 3,
+          pointBackgroundColor: '#ea580c',
+          pointRadius: 6,
+          pointHoverRadius: 8
+        };
+      }
+      return {
+        ...d,
+        backgroundColor: palette.slice(0, labels.length),
+        borderRadius: 6
+      };
+    });
 
     this.chartInstance = new Chart(ctx, {
       type: tipo,
       data: {
-        labels: this.reporteIA.grafico_data.labels,
-        datasets: this.reporteIA.grafico_data.datasets.map(d => ({
-          ...d,
-          borderRadius: 6
-        }))
+        labels: labels,
+        datasets: datasets
       },
       options: {
         responsive: true,
@@ -202,15 +243,34 @@ export class Reportes implements OnInit, AfterViewInit {
         plugins: {
           legend: {
             display: tipo === 'pie' || tipo === 'doughnut',
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+              color: '#334155',
+              font: { weight: 'bold', size: 12 }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#ffffff',
+            bodyColor: '#f8fafc',
+            padding: 10,
+            cornerRadius: 8
           }
         },
         scales: tipo === 'bar' || tipo === 'line' ? {
           y: {
             beginAtZero: true,
-            grid: { color: 'rgba(255, 255, 255, 0.08)' }
+            ticks: {
+              color: '#475569',
+              font: { weight: '600', size: 12 }
+            },
+            grid: { color: 'rgba(226, 232, 240, 0.8)' }
           },
           x: {
+            ticks: {
+              color: '#334155',
+              font: { weight: '600', size: 12 }
+            },
             grid: { display: false }
           }
         } : undefined
