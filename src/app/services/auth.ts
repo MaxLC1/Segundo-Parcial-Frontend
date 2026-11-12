@@ -100,6 +100,11 @@ export class Auth {
   }
 
   getEmpresaNombre(): string {
+    const selected = localStorage.getItem('selected_empresa_id');
+    if (this.getRole() === 'AdministradorPlataforma' && selected) {
+      if (selected === '2') return 'Urban Style SRL';
+      if (selected === '1') return 'Zara Bolivia S.A.';
+    }
     try {
       const encoded = this.getToken()?.split('.')[1];
       if (!encoded) return 'Mi empresa';

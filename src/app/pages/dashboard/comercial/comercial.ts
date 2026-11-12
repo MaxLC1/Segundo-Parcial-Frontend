@@ -181,7 +181,7 @@ export class Comercial implements OnInit {
   aviso = { titulo: '', mensaje: '' };
   traspaso: any = { origen_id: null, destino_id: null };
   item: any = { producto_id: null, talla_id: null, color_id: null, cantidad: 1 };
-  transferId = crypto.randomUUID();
+  transferId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36));
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -251,7 +251,7 @@ export class Comercial implements OnInit {
         detalles: [this.item],
       })
     )
-      this.transferId = crypto.randomUUID();
+      this.transferId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36));
   }
   branch(id: number) {
     return this.sucursales.find((s) => s.id === id)?.nombre || id;

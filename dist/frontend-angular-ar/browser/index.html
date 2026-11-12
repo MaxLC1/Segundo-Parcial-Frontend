@@ -4,6 +4,20 @@
     <meta charset="utf-8">
     <title>FashionStore SaaS & PWA - Plataforma Comercial Inteligente</title>
     <base href="/">
+    <script>
+      (function() {
+        var g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this;
+        if (!g.crypto) g.crypto = {};
+        if (!g.crypto.randomUUID) {
+          g.crypto.randomUUID = function() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+              return v.toString(16);
+            });
+          };
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
     <meta name="description" content="Plataforma SaaS Multitenant de comercio electrónico con soporte PWA Offline, Realidad Aumentada y Analítica Inteligente con IA">
@@ -26,5 +40,5 @@
         });
       }
     </script>
-  <script src="main-HBTU4RWA.js" type="module"></script></body>
+  <script src="main-3LKWVPJA.js" type="module"></script></body>
 </html>

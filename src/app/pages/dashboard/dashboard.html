@@ -435,18 +435,12 @@
     <header class="topbar">
       <div class="topbar-left" style="display: flex; align-items: center; gap: 1.25rem;">
         <h2>Panel de Control</h2>
-        <!-- Selector de Empresa (Tenant Switcher para Superadmin) -->
-        <div
-          *ngIf="userRole === 'AdministradorPlataforma' && empresasDisponibles && empresasDisponibles.length > 0"
-          style="display: flex; align-items: center; gap: 0.5rem; background: #e0e7ff; padding: 4px 10px; border-radius: 8px;"
-        >
-          <span style="font-size: 0.8rem; font-weight: 600; color: #3730a3;">Auditar Empresa:</span>
-          <select
-            [ngModel]="empresaId"
-            (ngModelChange)="cambiarTenant($event)"
-            style="padding: 4px 8px; border-radius: 6px; border: 1px solid #c7d2fe; font-size: 0.85rem; background: white; font-weight: 500;"
-          >
-            <option *ngFor="let emp of empresasDisponibles" [value]="emp.id">{{ emp.nombre }}</option>
+        <!-- Switcher de Tenant (Solo visible para Super Admin / AdministradorPlataforma) -->
+        <div class="tenant-switcher-badge" *ngIf="userRole === 'AdministradorPlataforma' || userRole === 'Superadmin'">
+          <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
+          <select [ngModel]="empresaId" (ngModelChange)="cambiarTenant($event)" title="Cambiar Empresa / Tenant activo">
+            <option [value]="1">Zara Bolivia S.A. (Plan Pro)</option>
+            <option [value]="2">Urban Style SRL (Plan Básico)</option>
           </select>
         </div>
       </div>

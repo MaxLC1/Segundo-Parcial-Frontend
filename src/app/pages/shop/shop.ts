@@ -17,7 +17,7 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./shop.css'],
 })
 export class Shop implements OnInit {
-  operationUuid = crypto.randomUUID();
+  operationUuid = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36));
   isCartOpen = false;
   isCheckoutOpen = false;
   cartItems: CartItem[] = [];
@@ -293,7 +293,7 @@ export class Shop implements OnInit {
   finalizarProceso(mensaje: string) {
     this.isProcessing = false;
     this.cartService.clearCart();
-    this.operationUuid = crypto.randomUUID();
+    this.operationUuid = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36));
     this.successMessage = mensaje;
     this.isSuccess = true;
     this.cdr.detectChanges();
