@@ -436,9 +436,10 @@
       <div class="topbar-left" style="display: flex; align-items: center; gap: 1.25rem;">
         <h2>Panel de Control</h2>
         <!-- Switcher de Tenant (Solo visible para Super Admin / AdministradorPlataforma) -->
-        <div class="tenant-switcher-badge" *ngIf="userRole === 'AdministradorPlataforma' || userRole === 'Superadmin'">
+        @if (userRole === 'AdministradorPlataforma') {
+        <div class="tenant-switcher-badge">
           <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
-          <select [ngModel]="empresaId" (ngModelChange)="cambiarTenant($event)" title="Cambiar Empresa / Tenant activo">
+          <select [ngModel]="empresaId" (ngModelChange)="cambiarTenant($event)" aria-label="Empresa activa" title="Cambiar Empresa / Tenant activo">
             <ng-container *ngIf="empresasDisponibles && empresasDisponibles.length > 0; else fallbackEmpresas">
               <option *ngFor="let emp of empresasDisponibles" [value]="emp.id">
                 {{ emp.nombre }} ({{ getPlanNombre(emp) }})
@@ -452,6 +453,7 @@
             </ng-template>
           </select>
         </div>
+        }
       </div>
 
       <!-- Controles de Estado de Red, Offline y PWA Sync (Desafío II) -->
