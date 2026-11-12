@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild, AfterViewI
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
-import { SaasService, ReporteIAResponse, DashboardMLResponse } from '../../../services/saas.service';
+import { SaasService, ReporteIAResponse, DashboardMLResponse, EmpresaSaaS } from '../../../services/saas.service';
 import { Auth } from '../../../services/auth';
 import { environment } from '../../../../environments/environment';
 
@@ -23,6 +23,9 @@ export class Reportes implements OnInit, AfterViewInit {
   
   // Estado Empresa y Tenant
   empresaId: number = 1;
+  empresasDisponibles: EmpresaSaaS[] = [];
+  errorEmpresas = '';
+  esAdministradorPlataforma = false;
   empresaNombre: string = 'Zara Bolivia S.A.';
   planPermiteIA: boolean = true;
   planNombre: string = 'Profesional';
@@ -61,7 +64,30 @@ export class Reportes implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
+    this.esAdministradorPlataforma = this.auth.getRole() === 'AdministradorPlataforma';
+    if (this.esAdministradorPlataforma) {
+      this.saasService.getEmpresas().subscribe({
+        next: (empresas) => {
+          this.empresasDisponibles = empresas;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.errorEmpresas = 'No se pudo cargar la lista de empresas. Recarga la página para reintentar.';
+          this.cdr.detectChanges();
+        },
+      });
+    }
     this.cargarDatosEmpresa();
+  }
+
+  cambiarEmpresa(empresaId: number | string) {
+    const id = Number(empresaId);
+    if (!this.esAdministradorPlataforma || id === this.empresaId ||
+        !this.empresasDisponibles.some((empresa) => empresa.id === id)) return;
+    this.auth.setEmpresaId(id);
+    // Reiniciar también gráficos y peticiones en curso de la empresa anterior.
+    // El encabezado y el reporte toman el mismo tenant persistido al recargar.
+    window.location.reload();
   }
 
   ngAfterViewInit() {
@@ -77,6 +103,7 @@ export class Reportes implements OnInit, AfterViewInit {
 
     this.saasService.getLimitesEmpresa(this.empresaId).subscribe({
       next: (limites) => {
+        this.empresaNombre = limites.empresa_nombre;
         this.planNombre = limites.plan_nombre;
         this.planPermiteIA = limites.permite_ia_generativa;
         this.cdr.detectChanges();

@@ -3,6 +3,24 @@
   <div class="header-section">
     <div>
       <h2 class="title">Centro de Inteligencia de Negocios y Analítica</h2>
+      @if (esAdministradorPlataforma) {
+        <div style="margin: 12px 0;">
+          <label for="empresa-reportes">Empresa del reporte</label>
+          <select id="empresa-reportes" class="input-field"
+            [ngModel]="empresaId" (ngModelChange)="cambiarEmpresa($event)"
+            [disabled]="!empresasDisponibles.length">
+            @if (!empresasDisponibles.length) {
+              <option [value]="empresaId">{{ errorEmpresas ? 'Lista no disponible' : 'Cargando empresas…' }}</option>
+            }
+            @for (empresa of empresasDisponibles; track empresa.id) {
+              <option [value]="empresa.id">{{ empresa.nombre }}</option>
+            }
+          </select>
+          @if (errorEmpresas) {
+            <p role="alert">{{ errorEmpresas }}</p>
+          }
+        </div>
+      }
       <p class="subtitle">
         Empresa: <strong>{{ empresaNombre }}</strong> &bull; Plan Actual:
         <span
