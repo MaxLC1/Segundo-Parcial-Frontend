@@ -102,8 +102,13 @@ export class Auth {
   getEmpresaNombre(): string {
     const selected = localStorage.getItem('selected_empresa_id');
     if (this.getRole() === 'AdministradorPlataforma' && selected) {
-      if (selected === '2') return 'Urban Style SRL';
-      if (selected === '1') return 'Zara Bolivia S.A.';
+      const mapa: Record<string, string> = {
+        '1': 'Zara Bolivia S.A.',
+        '2': 'Urban Style SRL',
+        '3': 'H&M Moda Bolivia',
+        '4': 'Pull&Bear Trend SRL'
+      };
+      if (mapa[selected]) return mapa[selected];
     }
     try {
       const encoded = this.getToken()?.split('.')[1];

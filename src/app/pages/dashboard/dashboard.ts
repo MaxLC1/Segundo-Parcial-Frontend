@@ -103,6 +103,15 @@ export class Dashboard implements OnInit {
     window.location.reload();
   }
 
+  getPlanNombre(emp: any): string {
+    const sub = emp.suscripciones && emp.suscripciones[0];
+    if (sub && sub.plan && sub.plan.nombre) {
+      return sub.plan.nombre.includes('Prof') ? 'Plan Pro' : 'Plan Básico';
+    }
+    // Fallback por ID de empresa
+    return emp.id % 2 === 1 ? 'Plan Pro' : 'Plan Básico';
+  }
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('selected_empresa_id');

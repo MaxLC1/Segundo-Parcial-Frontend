@@ -439,8 +439,17 @@
         <div class="tenant-switcher-badge" *ngIf="userRole === 'AdministradorPlataforma' || userRole === 'Superadmin'">
           <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
           <select [ngModel]="empresaId" (ngModelChange)="cambiarTenant($event)" title="Cambiar Empresa / Tenant activo">
-            <option [value]="1">Zara Bolivia S.A. (Plan Pro)</option>
-            <option [value]="2">Urban Style SRL (Plan Básico)</option>
+            <ng-container *ngIf="empresasDisponibles && empresasDisponibles.length > 0; else fallbackEmpresas">
+              <option *ngFor="let emp of empresasDisponibles" [value]="emp.id">
+                {{ emp.nombre }} ({{ getPlanNombre(emp) }})
+              </option>
+            </ng-container>
+            <ng-template #fallbackEmpresas>
+              <option [value]="1">Zara Bolivia S.A. (Plan Pro)</option>
+              <option [value]="2">Urban Style SRL (Plan Básico)</option>
+              <option [value]="3">H&amp;M Moda Bolivia (Plan Pro)</option>
+              <option [value]="4">Pull&amp;Bear Trend SRL (Plan Básico)</option>
+            </ng-template>
           </select>
         </div>
       </div>
