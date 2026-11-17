@@ -389,6 +389,10 @@
   width: 100%;
 }
 
+.chart-scroll { max-width: 100%; overflow-x: auto; }
+.chart-wrapper.branch-ranking { height: 600px; }
+.ranking-help { color: #475569; font-size: 0.85rem; margin: 10px 0 16px; }
+
 .chart-header-flex {
   display: flex;
   justify-content: space-between;

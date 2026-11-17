@@ -213,7 +213,18 @@ export class Reportes implements OnInit, AfterViewInit {
     if (!ctx) return;
 
     const tipo: any = this.reporteIA.grafico_tipo || 'bar';
-    const labels = this.reporteIA.grafico_data?.labels || [];
+    const branchRanking = this.reporteIA.tipo_reporte === 'top_productos_sucursal';
+    const rankingRows = this.reporteIA.filas || [];
+    const labels = branchRanking
+      ? rankingRows.map((row: any) => String(row['Producto']))
+      : this.reporteIA.grafico_data?.labels || [];
+    const branchGroups: {name: string; start: number; end: number}[] = [];
+    if (branchRanking) rankingRows.forEach((row: any, i: number) => {
+      const name = String(row['Sucursal']);
+      const last = branchGroups[branchGroups.length - 1];
+      if (last?.name === name) last.end = i;
+      else branchGroups.push({name, start: i, end: i});
+    });
 
     const palette = [
       '#f97316', // Naranja FashionStore
@@ -260,6 +271,43 @@ export class Reportes implements OnInit, AfterViewInit {
 
     this.chartInstance = new Chart(ctx, {
       type: tipo,
+      plugins: branchRanking ? [{
+        id: 'branchRankingLabels',
+        afterDraw(chart: any) {
+          const axis = chart.scales.x;
+          if (!axis || !labels.length) return;
+          const step = labels.length > 1 ? axis.getPixelForTick(1) - axis.getPixelForTick(0) : chart.chartArea.width;
+          const context = chart.ctx;
+          context.save();
+          context.strokeStyle = '#64748b';
+          context.fillStyle = '#0f172a';
+          context.font = 'bold 13px sans-serif';
+          context.textAlign = 'center';
+          context.textBaseline = 'top';
+          for (const group of branchGroups) {
+            const left = axis.getPixelForTick(group.start) - step * 0.43;
+            const right = axis.getPixelForTick(group.end) + step * 0.43;
+            const y = axis.bottom + 8;
+            context.beginPath();
+            context.moveTo(left, y - 5);
+            context.lineTo(left, y);
+            context.lineTo(right, y);
+            context.lineTo(right, y - 5);
+            context.stroke();
+            context.fillText(group.name, (left + right) / 2, y + 7, right - left);
+            if (group.start > 0) {
+              context.save();
+              context.setLineDash([4, 4]);
+              context.beginPath();
+              context.moveTo(left - step * 0.07, chart.chartArea.top);
+              context.lineTo(left - step * 0.07, chart.chartArea.bottom);
+              context.stroke();
+              context.restore();
+            }
+          }
+          context.restore();
+        }
+      }] : [],
       data: {
         labels: labels,
         datasets: datasets
@@ -267,6 +315,7 @@ export class Reportes implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {padding: {bottom: branchRanking ? 44 : 0}},
         plugins: {
           legend: {
             display: tipo === 'pie' || tipo === 'doughnut',
@@ -281,12 +330,19 @@ export class Reportes implements OnInit, AfterViewInit {
             titleColor: '#ffffff',
             bodyColor: '#f8fafc',
             padding: 10,
-            cornerRadius: 8
+            cornerRadius: 8,
+            callbacks: branchRanking ? {
+              title: (items: any[]) => {
+                const row = rankingRows[items[0]?.dataIndex];
+                return row ? `${row['Sucursal']} · #${row['Posición']} · ${row['Producto']}` : '';
+              }
+            } : {}
           }
         },
         scales: tipo === 'bar' || tipo === 'line' ? {
           y: {
             beginAtZero: true,
+            title: {display: branchRanking, text: 'Unidades vendidas'},
             ticks: {
               color: '#475569',
               font: { weight: '600', size: 12 }
@@ -295,6 +351,9 @@ export class Reportes implements OnInit, AfterViewInit {
           },
           x: {
             ticks: {
+              autoSkip: !branchRanking,
+              minRotation: branchRanking ? 90 : 0,
+              maxRotation: branchRanking ? 90 : 50,
               color: '#334155',
               font: { weight: '600', size: 12 }
             },
@@ -303,6 +362,14 @@ export class Reportes implements OnInit, AfterViewInit {
         } : undefined
       }
     });
+  }
+
+  get rankingPorSucursal(): boolean {
+    return this.reporteIA?.tipo_reporte === 'top_productos_sucursal';
+  }
+
+  get anchoGraficoRanking(): number | null {
+    return this.rankingPorSucursal ? Math.max(900, (this.reporteIA?.filas.length || 0) * 52) : null;
   }
 
   descargarExcel() {

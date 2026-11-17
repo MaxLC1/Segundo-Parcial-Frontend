@@ -162,8 +162,13 @@
       <!-- Gráfico Dinámico -->
       <div class="chart-card">
         <h4>Visualización Gráfica Interactiva</h4>
-        <div class="chart-wrapper">
+        @if (rankingPorSucursal) {
+          <p class="ranking-help">Ranking independiente por sucursal. Cada barra representa las unidades de un producto en esa sucursal. Desliza horizontalmente para ver todas.</p>
+        }
+        <div class="chart-scroll" [attr.tabindex]="rankingPorSucursal ? 0 : null" [attr.aria-label]="rankingPorSucursal ? 'Gráfico de rankings por sucursal, desplazable horizontalmente' : null">
+        <div class="chart-wrapper" [class.branch-ranking]="rankingPorSucursal" [style.width.px]="anchoGraficoRanking">
           <canvas #chartCanvas></canvas>
+        </div>
         </div>
       </div>
 
